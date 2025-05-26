@@ -51,6 +51,18 @@
             user-select: none; /* Standard syntax */
             touch-action: manipulation; /* 터치 이벤트 최적화: 탭 지연 제거 및 확대/축소 방지 */
         }
+        /* 건반 버튼들을 위한 Flexbox 래퍼 */
+        .synth-keys-wrapper {
+            display: flex;
+            flex-wrap: wrap; /* 내용이 넘치면 다음 줄로 */
+            justify-content: center;
+            gap: 0.5rem; /* 버튼 사이 간격 */
+            max-width: 100%; /* 부모 컨테이너에 맞춤 */
+        }
+        .synth-button {
+            min-width: 4rem; /* 버튼 최소 너비 */
+            flex-grow: 1; /* 공간이 남으면 채우기 */
+        }
     </style>
 </head>
 <body class="bg-amber-50 text-stone-800">
@@ -155,16 +167,42 @@
                 <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">미니 신디사이저 시뮬레이터</h3>
                 
                 <div class="flex flex-col items-center space-y-6">
+                    <div class="flex flex-wrap justify-center gap-4 mb-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="waveformType" value="sine" class="form-radio text-sky-600 accent-sky-600" checked>
+                            <span class="ml-2 text-sm font-medium text-gray-700">사인파 (Sine)</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="waveformType" value="square" class="form-radio text-sky-600 accent-sky-600">
+                            <span class="ml-2 text-sm font-medium text-gray-700">사각파 (Square)</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="waveformType" value="sawtooth" class="form-radio text-sky-600 accent-sky-600">
+                            <span class="ml-2 text-sm font-medium text-gray-700">톱니파 (Sawtooth)</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="waveformType" value="triangle" class="form-radio text-sky-600 accent-sky-600">
+                            <span class="ml-2 text-sm font-medium text-gray-700">삼각파 (Triangle)</span>
+                        </label>
+                    </div>
+
                     <div>
                         <label for="synthPitchKnob" class="block text-sm font-medium text-gray-700 mb-1">음높이 조절 (가변저항):</label>
                         <input type="range" id="synthPitchKnob" min="1" max="100" value="50" class="w-64 accent-amber-500">
                         <p class="text-xs text-center mt-1">현재 값: <span id="synthPitchValue" class="font-bold">50</span></p>
                     </div>
                     
-                    <div class="flex space-x-4">
-                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C">도</button>
-                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E">미</button>
-                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="G">솔</button>
+                    <div class="synth-keys-wrapper space-x-4">
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C4">도</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="D4">레</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E4">미</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="F4">파</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="G4">솔</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="A4">라</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="B4">시</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C5">높은 도</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="D5">높은 레</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E5">높은 미</button>
                     </div>
                     
                     <div class="chart-container w-full h-48 mt-4">
@@ -255,6 +293,9 @@
             }
         }
 
+        // 선택된 파형 타입을 저장하는 전역 변수
+        let selectedWaveformType = 'sine'; // 기본값은 사인파
+
         function playTone(frequency, duration = 0) {
             initAudio();
             if (oscillator) {
@@ -264,7 +305,7 @@
                 } catch (e) {}
             }
             oscillator = audioContext.createOscillator();
-            oscillator.type = 'sine';
+            oscillator.type = selectedWaveformType; // 선택된 파형 타입 적용
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
             
             oscillator.connect(gainNode);
@@ -461,10 +502,33 @@
             synthCtx.beginPath();
             synthCtx.moveTo(0, centerY);
 
-            const visualCycles = frequency / 100;
+            // 선택된 파형 타입에 따라 다른 파형을 그림
+            const visualCycles = frequency / 100; // 시각적 주파수 스케일
             for (let x = 0; x < width; x++) {
-                const angle = (x / width) * Math.PI * 2 * visualCycles;
-                const y = centerY + amplitude * Math.sin(angle);
+                let y;
+                const angle = (x / width) * Math.PI * 2 * visualCycles; // 0에서 2*PI*cycles까지 변화
+
+                switch (selectedWaveformType) {
+                    case 'sine':
+                        y = centerY + amplitude * Math.sin(angle);
+                        break;
+                    case 'square':
+                        y = centerY + amplitude * (Math.sin(angle) > 0 ? 1 : -1);
+                        break;
+                    case 'sawtooth':
+                        y = centerY - amplitude * (angle % (2 * Math.PI) / (2 * Math.PI) * 2 - 1);
+                        break;
+                    case 'triangle':
+                        const phase = angle % (2 * Math.PI);
+                        if (phase < Math.PI) {
+                            y = centerY - amplitude * (1 - (phase / Math.PI) * 2);
+                        } else {
+                            y = centerY - amplitude * (-1 + ((phase - Math.PI) / Math.PI) * 2);
+                        }
+                        break;
+                    default:
+                        y = centerY + amplitude * Math.sin(angle); // 기본은 사인파
+                }
                 synthCtx.lineTo(x, y);
             }
             synthCtx.strokeStyle = 'rgb(16, 185, 129)';
@@ -483,10 +547,18 @@
             }
         }
 
+        // 음계별 주파수 정의 (C4 기준)
         const noteFrequencies = {
-            'C': 261.63,
-            'E': 329.63,
-            'G': 392.00
+            'C4': 261.63, // 도 (중앙 C)
+            'D4': 293.66, // 레
+            'E4': 329.63, // 미
+            'F4': 349.23, // 파
+            'G4': 392.00, // 솔
+            'A4': 440.00, // 라 (기준음)
+            'B4': 493.88, // 시
+            'C5': 523.25, // 높은 도
+            'D5': 587.33, // 높은 레
+            'E5': 659.25  // 높은 미
         };
 
         // 섹션 4: 음높이 조절 슬라이더의 input 이벤트 리스너 수정
@@ -504,11 +576,32 @@
                 const activeNoteButton = document.querySelector('.synth-button.ring-4');
                 if (activeNoteButton) {
                     const note = activeNoteButton.dataset.note;
-                    synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`;
+                    synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                     drawSynthWave(finalFreq);
                 }
             }
         });
+
+        // 파형 선택 라디오 버튼 이벤트 리스너
+        document.querySelectorAll('input[name="waveformType"]').forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                selectedWaveformType = event.target.value;
+                // 만약 현재 소리가 재생 중이라면 파형 타입 즉시 변경
+                if (oscillator) {
+                    oscillator.type = selectedWaveformType;
+                    // 상태 텍스트 및 파형 업데이트
+                    const activeNoteButton = document.querySelector('.synth-button.ring-4');
+                    if (activeNoteButton) {
+                        const note = activeNoteButton.dataset.note;
+                        const pitch = parseInt(synthPitchKnob.value);
+                        const finalFreq = noteFrequencies[note] * (0.5 + (pitch / 100) * 1.5);
+                        synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                        drawSynthWave(finalFreq);
+                    }
+                }
+            });
+        });
+
 
         synthButtons.forEach(button => {
             // 마우스 이벤트 (PC용)
@@ -523,7 +616,7 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
+                synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
                 playTone(finalFreq, 0); // 무한 재생
                 drawSynthWave(finalFreq); // 소리 재생 시 파형 그림
@@ -558,7 +651,7 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
+                synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
                 playTone(finalFreq, 0);
                 drawSynthWave(finalFreq);
