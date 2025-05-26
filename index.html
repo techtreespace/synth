@@ -59,9 +59,12 @@
             gap: 0.5rem; /* 버튼 사이 간격 */
             max-width: 100%; /* 부모 컨테이너에 맞춤 */
         }
+        /* 건반 버튼 크기 고정 및 내용 중앙 정렬 */
         .synth-button {
-            min-width: 4rem; /* 버튼 최소 너비 */
-            flex-grow: 1; /* 공간이 남으면 채우기 */
+            @apply w-16 h-16 flex items-center justify-center; /* 고정된 크기와 중앙 정렬 */
+            flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 함 */
+            /* 기존 패딩은 w-16 h-16으로 대체되므로 제거 */
+            /* py-3 px-6 rounded-lg shadow transition-transform hover:scale-105 는 Tailwind 클래스이므로 그대로 둠 */
         }
     </style>
 </head>
@@ -192,17 +195,17 @@
                         <p class="text-xs text-center mt-1">현재 값: <span id="synthPitchValue" class="font-bold">50</span></p>
                     </div>
                     
-                    <div class="synth-keys-wrapper space-x-4">
-                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C4">도</button>
-                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="D4">레</button>
-                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E4">미</button>
-                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="F4">파</button>
-                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="G4">솔</button>
-                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="A4">라</button>
-                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="B4">시</button>
-                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C5">높은 도</button>
-                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="D5">높은 레</button>
-                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E5">높은 미</button>
+                    <div class="synth-keys-wrapper">
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="C4">도1</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="D4">레1</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="E4">미1</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="F4">파1</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="G4">솔1</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="A4">라1</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="B4">시1</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="C5">도2</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="D5">레2</button>
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg shadow transition-transform hover:scale-105" data-note="E5">미2</button>
                     </div>
                     
                     <div class="chart-container w-full h-48 mt-4">
@@ -549,16 +552,16 @@
 
         // 음계별 주파수 정의 (C4 기준)
         const noteFrequencies = {
-            'C4': 261.63, // 도 (중앙 C)
-            'D4': 293.66, // 레
-            'E4': 329.63, // 미
-            'F4': 349.23, // 파
-            'G4': 392.00, // 솔
-            'A4': 440.00, // 라 (기준음)
-            'B4': 493.88, // 시
-            'C5': 523.25, // 높은 도
-            'D5': 587.33, // 높은 레
-            'E5': 659.25  // 높은 미
+            'C4': 261.63, // 도1
+            'D4': 293.66, // 레1
+            'E4': 329.63, // 미1
+            'F4': 349.23, // 파1
+            'G4': 392.00, // 솔1
+            'A4': 440.00, // 라1 (기준음)
+            'B4': 493.88, // 시1
+            'C5': 523.25, // 도2
+            'D5': 587.33, // 레2
+            'E5': 659.25  // 미2
         };
 
         // 섹션 4: 음높이 조절 슬라이더의 input 이벤트 리스너 수정
@@ -576,7 +579,13 @@
                 const activeNoteButton = document.querySelector('.synth-button.ring-4');
                 if (activeNoteButton) {
                     const note = activeNoteButton.dataset.note;
-                    synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                    // Hz 기반 표기를 위한 매핑
+                    const noteTextMap = {
+                        'C4': '도1', 'D4': '레1', 'E4': '미1', 'F4': '파1', 'G4': '솔1', 'A4': '라1', 'B4': '시1',
+                        'C5': '도2', 'D5': '레2', 'E5': '미2'
+                    };
+                    const displayNote = noteTextMap[note] || note; // 매핑된 텍스트 사용
+                    synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                     drawSynthWave(finalFreq);
                 }
             }
@@ -595,7 +604,14 @@
                         const note = activeNoteButton.dataset.note;
                         const pitch = parseInt(synthPitchKnob.value);
                         const finalFreq = noteFrequencies[note] * (0.5 + (pitch / 100) * 1.5);
-                        synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                        
+                        // Hz 기반 표기를 위한 매핑
+                        const noteTextMap = {
+                            'C4': '도1', 'D4': '레1', 'E4': '미1', 'F4': '파1', 'G4': '솔1', 'A4': '라1', 'B4': '시1',
+                            'C5': '도2', 'D5': '레2', 'E5': '미2'
+                        };
+                        const displayNote = noteTextMap[note] || note; // 매핑된 텍스트 사용
+                        synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                         drawSynthWave(finalFreq);
                     }
                 }
@@ -616,7 +632,14 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                // Hz 기반 표기를 위한 매핑
+                const noteTextMap = {
+                    'C4': '도1', 'D4': '레1', 'E4': '미1', 'F4': '파1', 'G4': '솔1', 'A4': '라1', 'B4': '시1',
+                    'C5': '도2', 'D5': '레2', 'E5': '미2'
+                };
+                const displayNote = noteTextMap[note] || note; // 매핑된 텍스트 사용
+
+                synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
                 playTone(finalFreq, 0); // 무한 재생
                 drawSynthWave(finalFreq); // 소리 재생 시 파형 그림
@@ -630,7 +653,7 @@
                 currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
             button.addEventListener('mouseleave', () => {
-                 if (synthOutputStatus.textContent.includes(button.dataset.note)) {
+                 if (synthOutputStatus.textContent.includes(button.dataset.note)) { // 이 조건은 이제 `displayNote`를 사용해야 할 수도 있지만, `includes`는 여전히 작동할 것임
                     synthOutputStatus.textContent = '대기 중...';
                     drawSynthWave(0);
                     button.classList.remove('ring-4', 'ring-yellow-300');
@@ -651,7 +674,14 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                synthOutputStatus.textContent = `${note} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                // Hz 기반 표기를 위한 매핑
+                const noteTextMap = {
+                    'C4': '도1', 'D4': '레1', 'E4': '미1', 'F4': '파1', 'G4': '솔1', 'A4': '라1', 'B4': '시1',
+                    'C5': '도2', 'D5': '레2', 'E5': '미2'
+                };
+                const displayNote = noteTextMap[note] || note; // 매핑된 텍스트 사용
+
+                synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
                 playTone(finalFreq, 0);
                 drawSynthWave(finalFreq);
