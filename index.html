@@ -241,6 +241,7 @@
         let audioContext;
         let oscillator;
         let gainNode;
+        let currentPlayingBaseFreq = 0; // 섹션 4에서 현재 재생 중인 음의 기본 주파수를 저장
 
         function initAudio() {
             if (!audioContext) {
@@ -488,8 +489,25 @@
             'G': 392.00
         };
 
+        // 섹션 4: 음높이 조절 슬라이더의 input 이벤트 리스너 수정
         synthPitchKnob.addEventListener('input', (event) => {
-            synthPitchValue.textContent = event.target.value;
+            const pitch = parseInt(event.target.value);
+            synthPitchValue.textContent = pitch;
+
+            // 현재 오실레이터가 활성화되어 소리가 재생 중이라면 주파수 업데이트
+            if (oscillator && currentPlayingBaseFreq !== 0) {
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
+                const finalFreq = currentPlayingBaseFreq * pitchMultiplier;
+                oscillator.frequency.setValueAtTime(finalFreq, audioContext.currentTime);
+                
+                // 상태 텍스트 및 파형도 업데이트
+                const activeNoteButton = document.querySelector('.synth-button.ring-4');
+                if (activeNoteButton) {
+                    const note = activeNoteButton.dataset.note;
+                    synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`;
+                    drawSynthWave(finalFreq);
+                }
+            }
         });
 
         synthButtons.forEach(button => {
@@ -500,13 +518,15 @@
                 const pitch = parseInt(synthPitchKnob.value);
                 
                 let baseFreq = noteFrequencies[note];
+                currentPlayingBaseFreq = baseFreq; // 현재 재생 중인 음의 기본 주파수 저장
+
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
                 synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
                 
-                playTone(finalFreq, 0);
-                drawSynthWave(finalFreq);
+                playTone(finalFreq, 0); // 무한 재생
+                drawSynthWave(finalFreq); // 소리 재생 시 파형 그림
                 button.classList.add('ring-4', 'ring-yellow-300');
             });
             button.addEventListener('mouseup', () => {
@@ -514,6 +534,7 @@
                 drawSynthWave(0);
                 button.classList.remove('ring-4', 'ring-yellow-300');
                 stopTone();
+                currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
             button.addEventListener('mouseleave', () => {
                  if (synthOutputStatus.textContent.includes(button.dataset.note)) {
@@ -521,6 +542,7 @@
                     drawSynthWave(0);
                     button.classList.remove('ring-4', 'ring-yellow-300');
                     stopTone();
+                    currentPlayingBaseFreq = 0;
                  }
             });
 
@@ -531,6 +553,8 @@
                 const pitch = parseInt(synthPitchKnob.value);
                 
                 let baseFreq = noteFrequencies[note];
+                currentPlayingBaseFreq = baseFreq; // 현재 재생 중인 음의 기본 주파수 저장
+
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
@@ -546,6 +570,7 @@
                 drawSynthWave(0);
                 button.classList.remove('ring-4', 'ring-yellow-300');
                 stopTone();
+                currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
         });
         
