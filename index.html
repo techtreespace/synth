@@ -44,6 +44,13 @@
                 height: 250px;
             }
         }
+        /* 추가된 CSS: 텍스트 선택 방지 */
+        .synth-button, #tactSwitchDemo {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+            touch-action: manipulation; /* 터치 이벤트 최적화: 탭 지연 제거 및 확대/축소 방지 */
+        }
     </style>
 </head>
 <body class="bg-amber-50 text-stone-800">
@@ -231,8 +238,6 @@
             }
         }
 
-        // showSection('sound'); // 이 초기 호출을 window.onload로 옮김
-
         let audioContext;
         let oscillator;
         let gainNode;
@@ -283,11 +288,11 @@
         const frequencySlider = document.getElementById('frequencySlider');
         const frequencyValue = document.getElementById('frequencyValue');
         const pitchDescription = document.getElementById('pitchDescription');
-        let waveCanvas; // Declare waveCanvas globally
-        let waveCtx;    // Declare waveCtx globally
+        let waveCanvas; 
+        let waveCtx;    
 
         function drawWave(frequency) {
-            if (!waveCtx || !waveCanvas) return; // Ensure context and canvas are available before drawing
+            if (!waveCtx || !waveCanvas) return; 
 
             const width = waveCanvas.width;
             const height = waveCanvas.height;
@@ -310,9 +315,9 @@
         }
         
         function setupWaveCanvas() {
-            waveCanvas = document.getElementById('waveCanvas'); // Assign here
-            if (waveCanvas) { // Check if element exists
-                waveCtx = waveCanvas.getContext('2d'); // Assign here
+            waveCanvas = document.getElementById('waveCanvas'); 
+            if (waveCanvas) { 
+                waveCtx = waveCanvas.getContext('2d'); 
                 const container = waveCanvas.parentElement;
                 waveCanvas.width = container.clientWidth;
                 waveCanvas.height = container.clientHeight;
@@ -400,11 +405,24 @@
             }
         }
 
-        tactSwitchDemo.addEventListener('mousedown', () => handleTactSwitch(true));
+        // 마우스 이벤트 (PC용)
+        tactSwitchDemo.addEventListener('mousedown', (event) => {
+            event.preventDefault(); // 기본 드래그/선택 방지
+            handleTactSwitch(true);
+        });
         tactSwitchDemo.addEventListener('mouseup', () => handleTactSwitch(false));
         tactSwitchDemo.addEventListener('mouseleave', () => {
             if (isTactSwitchOn) handleTactSwitch(false);
         });
+
+        // 터치 이벤트 (모바일용)
+        tactSwitchDemo.addEventListener('touchstart', (event) => {
+            event.preventDefault(); // 기본 텍스트 선택/줌 방지
+            handleTactSwitch(true);
+        }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
+        tactSwitchDemo.addEventListener('touchend', () => handleTactSwitch(false));
+        // touchend 이후에 touchcancel도 고려할 수 있지만, 여기서는 간단하게 touchend만 사용
+
 
         document.addEventListener('keydown', (event) => {
             if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && !isSpaceOrEnterPressed) {
@@ -426,12 +444,12 @@
         const synthPitchValue = document.getElementById('synthPitchValue');
         const synthButtons = document.querySelectorAll('.synth-button');
         const synthOutputStatus = document.getElementById('synthOutputStatus');
-        let synthOutputCanvas; // Declare synthOutputCanvas globally
-        let synthCtx;    // Declare synthCtx globally
+        let synthOutputCanvas; 
+        let synthCtx;    
 
         // 섹션 4의 파형 시각화 함수
         function drawSynthWave(frequency) {
-            if (!synthCtx || !synthOutputCanvas) return; // Ensure context and canvas are available before drawing
+            if (!synthCtx || !synthOutputCanvas) return; 
 
             const width = synthOutputCanvas.width;
             const height = synthOutputCanvas.height;
@@ -454,9 +472,9 @@
         }
 
         function setupSynthCanvas() {
-            synthOutputCanvas = document.getElementById('synthOutputCanvas'); // Assign here
-            if (synthOutputCanvas) { // Check if element exists
-                synthCtx = synthOutputCanvas.getContext('2d'); // Assign here
+            synthOutputCanvas = document.getElementById('synthOutputCanvas'); 
+            if (synthOutputCanvas) { 
+                synthCtx = synthOutputCanvas.getContext('2d'); 
                 const container = synthOutputCanvas.parentElement;
                 synthOutputCanvas.width = container.clientWidth;
                 synthOutputCanvas.height = container.clientHeight;
@@ -475,7 +493,9 @@
         });
 
         synthButtons.forEach(button => {
-            button.addEventListener('mousedown', () => {
+            // 마우스 이벤트 (PC용)
+            button.addEventListener('mousedown', (event) => {
+                event.preventDefault(); // 기본 드래그/선택 방지
                 const note = button.dataset.note;
                 const pitch = parseInt(synthPitchKnob.value);
                 
@@ -483,7 +503,7 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 주파수 표시로 변경
+                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
                 
                 playTone(finalFreq, 0);
                 drawSynthWave(finalFreq);
@@ -503,6 +523,24 @@
                     stopTone();
                  }
             });
+
+            // 터치 이벤트 (모바일용)
+            button.addEventListener('touchstart', (event) => {
+                event.preventDefault(); // 기본 텍스트 선택/줌 방지
+                const note = button.dataset.note;
+                const pitch = parseInt(synthPitchKnob.value);
+                
+                let baseFreq = noteFrequencies[note];
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
+                const finalFreq = baseFreq * pitchMultiplier;
+
+                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
+                
+                playTone(finalFreq, 0);
+                drawSynthWave(finalFreq);
+                button.classList.add('ring-4', 'ring-yellow-300');
+            }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
+
             button.addEventListener('touchend', () => {
                 synthOutputStatus.textContent = '대기 중...';
                 drawSynthWave(0);
@@ -512,7 +550,6 @@
         });
         
         window.addEventListener('load', () => {
-            // DOM이 완전히 로드된 후 캔버스 초기화 및 첫 섹션 표시
             setupWaveCanvas();
             setupSynthCanvas();
             showSection('sound');
