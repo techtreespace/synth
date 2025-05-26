@@ -45,7 +45,7 @@
             }
         }
         /* 추가된 CSS: 텍스트 선택 방지 */
-        .synth-button, #tactSwitchDemo {
+        .synth-button, #tactSwitchDemo, #potentiometerCanvas {
             -webkit-user-select: none; /* Safari */
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard syntax */
@@ -134,8 +134,8 @@
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">가변저항: 소리 높낮이 마법사</h3>
                     <p>가변저항은 손잡이를 돌려 저항값을 바꿀 수 있는 특별한 저항이에요. 신디사이저에서는 이 가변저항을 돌려 555 타이머에 연결된 저항값을 변화시키고, 결과적으로 <strong class="text-amber-600">소리의 높낮이를 마음대로 조절</strong>할 수 있게 해줍니다. 라디오 볼륨 조절기처럼요!</p>
                      <div class="interactive-box mt-2">
-                        <label for="potentiometerDemo" class="block text-sm font-medium text-gray-700">가변저항 체험:</label>
-                        <input type="range" id="potentiometerDemo" min="0" max="100" value="50" class="w-full accent-amber-500 mt-1">
+                        <label for="potentiometerCanvas" class="block text-sm font-medium text-gray-700">가변저항 체험:</label>
+                        <canvas id="potentiometerCanvas" class="w-full max-w-xs mx-auto" width="150" height="150"></canvas>
                         <p class="text-sm mt-1">저항 값: <span id="potentiometerValue" class="font-bold text-sky-600">50</span>% (택트 스위치를 누른 상태에서 조절)</p>
                     </div>
                 </div>
@@ -406,23 +406,202 @@
         }, 700);
 
 
-        const potentiometerDemo = document.getElementById('potentiometerDemo');
-        const potentiometerValue = document.getElementById('potentiometerValue');
+        // 가변저항 노브 관련 전역 변수
+        let potentiometerCanvas;
+        let potentiometerCtx;
+        let knobValue = 50; // Initial value
+        let isDraggingKnob = false;
+        let knobCenterX, knobCenterY;
+        let initialMouseAngle = 0;
+        let initialKnobValue = 0;
 
-        potentiometerDemo.addEventListener('input', (event) => {
-            const val = parseInt(event.target.value);
-            potentiometerValue.textContent = val;
+        // 노브 그리기 함수
+        function drawKnob(value) {
+            if (!potentiometerCtx || !potentiometerCanvas) return;
+
+            const size = potentiometerCanvas.width;
+            knobCenterX = size / 2;
+            knobCenterY = size / 2;
+            const radius = size / 2 - 5; // Knob radius
+
+            // Ensure radius is positive
+            if (radius <= 0) {
+                console.error("Radius is non-positive, cannot draw knob.");
+                return;
+            }
+
+            potentiometerCtx.clearRect(0, 0, size, size);
+
+            // Draw knob background
+            potentiometerCtx.beginPath();
+            potentiometerCtx.arc(knobCenterX, knobCenterY, radius, 0, Math.PI * 2);
+            potentiometerCtx.fillStyle = '#4B5563'; // Tailwind gray-700
+            potentiometerCtx.fill();
+            potentiometerCtx.strokeStyle = '#374151'; // Darker gray
+            potentiometerCtx.lineWidth = 2;
+            potentiometerCtx.stroke();
+
+            // Draw indicator line
+            const startAngle = Math.PI * 0.75; // 135 degrees (bottom-left)
+            const endAngle = Math.PI * 2.25; // 405 degrees (bottom-right, going clockwise)
+            const currentAngle = startAngle + (value / 100) * (endAngle - startAngle);
+
+            const indicatorLength = radius * 0.7;
+            const indicatorX = knobCenterX + indicatorLength * Math.cos(currentAngle);
+            const indicatorY = knobCenterY + indicatorLength * Math.sin(currentAngle);
+
+            potentiometerCtx.beginPath();
+            potentiometerCtx.moveTo(knobCenterX, knobCenterY);
+            potentiometerCtx.lineTo(indicatorX, indicatorY);
+            potentiometerCtx.strokeStyle = '#FCD34D'; // Tailwind amber-300
+            potentiometerCtx.lineWidth = 3;
+            potentiometerCtx.stroke();
+
+            // Update text value
+            document.getElementById('potentiometerValue').textContent = value;
+        }
+
+        // 노브 설정 함수
+        function setupPotentiometerKnob() {
+            potentiometerCanvas = document.getElementById('potentiometerCanvas');
+            if (potentiometerCanvas) {
+                potentiometerCtx = potentiometerCanvas.getContext('2d');
+                const container = potentiometerCanvas.parentElement;
+                // Ensure a minimum width to prevent negative radius
+                potentiometerCanvas.width = Math.max(50, Math.min(150, container.clientWidth));
+                potentiometerCanvas.height = potentiometerCanvas.width; // Keep aspect ratio
+                drawKnob(knobValue); // Draw initial state
+
+                // Mouse events
+                potentiometerCanvas.addEventListener('mousedown', onKnobMouseDown);
+                window.addEventListener('mousemove', onKnobMouseMove);
+                window.addEventListener('mouseup', onKnobMouseUp);
+
+                // Touch events
+                potentiometerCanvas.addEventListener('touchstart', onKnobTouchStart, { passive: false });
+                window.addEventListener('touchmove', onKnobTouchMove, { passive: false });
+                window.addEventListener('touchend', onKnobTouchEnd);
+            }
+        }
+
+        function getEventCoords(event) {
+            const rect = potentiometerCanvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (event.touches && event.touches.length > 0) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            } else {
+                clientX = event.clientX;
+                clientY = event.clientY;
+            }
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function calculateAngle(x, y) {
+            const dx = x - knobCenterX;
+            const dy = y - knobCenterY;
+            let angle = Math.atan2(dy, dx); // -PI to PI
+            // Normalize angle to 0 to 2*PI
+            if (angle < 0) angle += 2 * Math.PI;
+            return angle;
+        }
+
+        const KNOB_ANGLE_START = Math.PI * 0.75; // 135 degrees
+        const KNOB_ANGLE_END = Math.PI * 2.25;   // 405 degrees (135 + 270)
+        const KNOB_ANGLE_RANGE = KNOB_ANGLE_END - KNOB_ANGLE_START; // 270 degrees (1.5 * PI)
+
+        function onKnobMouseDown(event) {
+            event.preventDefault();
+            isDraggingKnob = true;
+            const coords = getEventCoords(event);
+            initialMouseAngle = calculateAngle(coords.x, coords.y);
+            initialKnobValue = knobValue;
+        }
+
+        function onKnobMouseMove(event) {
+            if (!isDraggingKnob) return;
+            event.preventDefault(); // Prevent text selection/scrolling on drag
+
+            const coords = getEventCoords(event);
+            let currentMouseAngle = calculateAngle(coords.x, coords.y);
+
+            let angleDelta = currentMouseAngle - initialMouseAngle;
+
+            // Handle angle wrapping (e.g., going from 350 to 10 degrees)
+            if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+            if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+
+            // Map angleDelta to value change (e.g., 270 degrees = 100 value change)
+            const valueDelta = (angleDelta / KNOB_ANGLE_RANGE) * 100;
+            let newValue = initialKnobValue + valueDelta;
+
+            // Clamp value between 0 and 100
+            newValue = Math.max(0, Math.min(100, newValue));
+            knobValue = Math.round(newValue); // Round to integer
+
+            drawKnob(knobValue);
+
+            // If tact switch is on, update audio frequency
             if (isTactSwitchOn) {
-                const audioFreq = 200 + (val / 100) * 1000;
+                const audioFreq = 200 + (knobValue / 100) * 1000;
+                if (oscillator) {
+                    oscillator.frequency.setValueAtTime(audioFreq, audioContext.currentTime);
+                } else {
+                    playTone(audioFreq, 0); // Should not happen if tact switch is on, but as fallback
+                }
+            }
+        }
+
+        function onKnobMouseUp() {
+            isDraggingKnob = false;
+        }
+
+        function onKnobTouchStart(event) {
+            event.preventDefault();
+            isDraggingKnob = true;
+            const coords = getEventCoords(event);
+            initialMouseAngle = calculateAngle(coords.x, coords.y);
+            initialKnobValue = knobValue;
+        }
+
+        function onKnobTouchMove(event) {
+            if (!isDraggingKnob) return;
+            event.preventDefault(); // Prevent scrolling
+
+            const coords = getEventCoords(event);
+            let currentMouseAngle = calculateAngle(coords.x, coords.y);
+
+            let angleDelta = currentMouseAngle - initialMouseAngle;
+
+            if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
+            if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
+
+            const valueDelta = (angleDelta / KNOB_ANGLE_RANGE) * 100;
+            let newValue = initialKnobValue + valueDelta;
+
+            newValue = Math.max(0, Math.min(100, newValue));
+            knobValue = Math.round(newValue);
+
+            drawKnob(knobValue);
+
+            if (isTactSwitchOn) {
+                const audioFreq = 200 + (knobValue / 100) * 1000;
                 if (oscillator) {
                     oscillator.frequency.setValueAtTime(audioFreq, audioContext.currentTime);
                 } else {
                     playTone(audioFreq, 0);
                 }
             }
-        });
+        }
 
+        function onKnobTouchEnd() {
+            isDraggingKnob = false;
+        }
 
+        // Update handleTactSwitch to use knobValue
         const tactSwitchDemo = document.getElementById('tactSwitchDemo');
         const tactSwitchStatus = document.getElementById('tactSwitchStatus');
         let isTactSwitchOn = false;
@@ -435,8 +614,7 @@
                 tactSwitchDemo.classList.add('bg-red-500', 'hover:bg-red-600');
                 tactSwitchDemo.classList.remove('bg-sky-500', 'hover:bg-sky-600');
                 
-                const potVal = parseInt(potentiometerDemo.value);
-                const audioFreq = 200 + (potVal / 100) * 1000;
+                const audioFreq = 200 + (knobValue / 100) * 1000; // Use knobValue
                 playTone(audioFreq, 0); 
 
             } else if (!on && isTactSwitchOn) {
@@ -604,6 +782,7 @@
             });
             setupWaveCanvas();
             setupSynthCanvas();
+            setupPotentiometerKnob(); // 가변저항 노브 초기화
             showSection('sound');
         });
 
@@ -748,6 +927,7 @@
         window.addEventListener('resize', () => {
             setupWaveCanvas();
             setupSynthCanvas();
+            setupPotentiometerKnob(); // Resize 시 노브도 다시 그림
         });
 
     </script>
