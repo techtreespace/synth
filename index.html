@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIY 아날로그 신디사이저 탐험</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-button {
+            @apply px-4 py-2 font-semibold rounded-t-lg transition-colors duration-200 ease-in-out;
+        }
+        .tab-button.active {
+            @apply bg-sky-600 text-white;
+        }
+        .tab-button:not(.active) {
+            @apply text-sky-700 bg-sky-100 hover:bg-sky-200;
+        }
+        .content-section {
+            @apply p-6 bg-white rounded-b-lg rounded-tr-lg shadow-lg min-h-[400px];
+        }
+        .interactive-box {
+            @apply border-2 border-dashed border-amber-500 p-4 rounded-lg mt-4 text-center;
+        }
+        .component-card {
+            @apply bg-stone-100 p-4 rounded-lg shadow hover:shadow-md transition-shadow;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 200px;
+            max-height: 250px;
+            background-color: #f0f0f0;
+            border-radius: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-stone-800">
+
+    <header class="bg-sky-700 text-white p-6 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-3xl font-bold">?? DIY 아날로그 신디사이저 탐험 ??</h1>
+            <nav class="mt-4 sm:mt-0">
+                <button class="tab-button active" onclick="showSection('sound')">1. 소리의 세계</button>
+                <button class="tab-button" onclick="showSection('heart')">2. 신디사이저의 심장</button>
+                <button class="tab-button" onclick="showSection('hands')">3. 신디사이저의 손과 발</button>
+                <button class="tab-button" onclick="showSection('play')">4. 나만의 신디사이저 연주!</button>
+                <button class="tab-button" onclick="showSection('summary')">5. 핵심 정리</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-8">
+        <div id="sound" class="content-section">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">1. 소리의 세계 ??</h2>
+            <p class="mb-4">이 섹션에서는 우리 주변의 '소리'가 무엇인지, 어떻게 만들어지고 우리가 어떻게 듣게 되는지 기본적인 원리를 탐험합니다. 신디사이저를 이해하기 위한 첫걸음, 함께 시작해볼까요?</p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">소리의 발생 원리</h3>
+                    <p>소리는 물체가 <strong class="text-amber-600">진동</strong>해서 만들어지는 에너지의 한 형태예요. 기타 줄을 튕기면 줄이 떨리죠? 이 떨림(진동)이 공기를 흔들어 우리 귀에 닿으면 소리로 인식된답니다. 마치 물 위에 돌을 던졌을 때 물결이 퍼져나가는 것과 비슷해요!</p>
+                </div>
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">소리의 높낮이 (음고)</h3>
+                    <p>소리의 높낮이는 진동이 얼마나 <strong class="text-amber-600">빠르게</strong> 일어나는지에 따라 결정돼요. 진동이 빠르면 높은 소리(고음), 느리면 낮은 소리(저음)가 나죠. 1초에 몇 번 진동하는지를 나타내는 단위를 <strong class="text-amber-600">주파수(Hz)</strong>라고 해요. 주파수가 높을수록 높은 소리가 납니다!</p>
+                </div>
+            </div>
+
+            <div class="interactive-box mt-6">
+                <h4 class="text-lg font-semibold mb-2">주파수 조절 체험</h4>
+                <p class="mb-2 text-sm">아래 슬라이더를 움직여 주파수를 조절해보세요. 주파수에 따라 파형이 어떻게 변하고 소리가 어떻게 달라지는지 관찰해봅시다!</p>
+                <input type="range" id="frequencySlider" min="1" max="20" value="5" class="w-full max-w-md mx-auto accent-amber-500">
+                <p class="mt-2">현재 주파수 단계: <span id="frequencyValue" class="font-bold text-sky-600">5</span></p>
+                <div class="chart-container mt-4">
+                    <canvas id="waveCanvas"></canvas>
+                </div>
+                <p id="pitchDescription" class="mt-2 font-semibold"></p>
+            </div>
+        </div>
+
+        <div id="heart" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">2. 신디사이저의 심장: 555 타이머와 OP-AMP ??</h2>
+            <p class="mb-4">신디사이저가 소리를 내는 데에는 핵심적인 역할을 하는 부품들이 있어요. 바로 '555 타이머'와 'OP-AMP'인데요, 이들이 어떻게 신디사이저의 심장처럼 작동하는지 알아봅시다!</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">555 타이머: 소리의 박자를 만드는 지휘자</h3>
+                    <p>555 타이머는 규칙적인 전기 신호(펄스)를 만들어내는 부품이에요. 우리 신디사이저에서는 이 펄스의 빠르기를 조절해서 소리의 높낮이, 즉 <strong class="text-amber-600">주파수</strong>를 결정하는 핵심 역할을 해요. 마치 물통에 물을 채웠다 비우는 것을 반복하며 일정한 간격을 만들어내는 것과 비슷하답니다.</p>
+                    <div id="timerAnimation" class="mt-2 h-16 bg-sky-100 rounded flex items-center justify-center text-sm text-sky-700">
+                        펄스 생성 중... (띠-띠-띠)
+                    </div>
+                </div>
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">OP-AMP (연산 증폭기): 소리를 키워주는 스피커</h3>
+                    <p>555 타이머가 만든 소리 신호는 아직 너무 작아서 잘 들리지 않아요. 이때 OP-AMP가 등장합니다! OP-AMP는 이 작은 신호를 <strong class="text-amber-600">아주 크게 키워주는(증폭하는)</strong> 역할을 해요. 마이크로 목소리를 크게 만드는 것처럼요. 덕분에 우리는 신디사이저 소리를 스피커로 들을 수 있게 된답니다.</p>
+                    <div id="opampAnimation" class="mt-2 h-16 bg-emerald-100 rounded flex items-center justify-center text-sm text-emerald-700">
+                        신호 증폭 중... (소리가 커집니다!)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="hands" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">3. 신디사이저의 손과 발: 주요 부품들 ?????</h2>
+            <p class="mb-4">신디사이저를 직접 조작하고 소리를 다양하게 만들기 위해서는 여러 부품들이 필요해요. 전기 흐름을 조절하는 '저항', 소리 높낮이를 바꾸는 '가변저항', 소리를 켜고 끄는 '택트 스위치'에 대해 알아볼까요?</p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">저항: 전기 흐름의 문지기</h3>
+                    <p>저항은 전기 회로에서 전류의 양을 조절하거나 전압을 나누는 역할을 해요. 마치 수도꼭지로 물의 양을 조절하듯, 저항은 전기 에너지의 흐름을 <strong class="text-amber-600">적절하게 제어</strong>합니다. 555 타이머의 작동 속도 조절에도 관여해요.</p>
+                </div>
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">가변저항: 소리 높낮이 마법사</h3>
+                    <p>가변저항은 손잡이를 돌려 저항값을 바꿀 수 있는 특별한 저항이에요. 신디사이저에서는 이 가변저항을 돌려 555 타이머에 연결된 저항값을 변화시키고, 결과적으로 <strong class="text-amber-600">소리의 높낮이를 마음대로 조절</strong>할 수 있게 해줍니다. 라디오 볼륨 조절기처럼요!</p>
+                     <div class="interactive-box mt-2">
+                        <label for="potentiometerDemo" class="block text-sm font-medium text-gray-700">가변저항 체험:</label>
+                        <input type="range" id="potentiometerDemo" min="0" max="100" value="50" class="w-full accent-amber-500 mt-1">
+                        <p class="text-sm mt-1">저항 값: <span id="potentiometerValue" class="font-bold text-sky-600">50</span>% (택트 스위치를 누른 상태에서 조절)</p>
+                    </div>
+                </div>
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">택트 스위치: 소리 재생 버튼</h3>
+                    <p>택트 스위치는 누르면 회로가 연결되어 소리가 나고, 손을 떼면 회로가 끊어져 소리가 멈추는 <strong class="text-amber-600">버튼</strong>이에요. 전등 스위치처럼 전기의 길을 열었다 닫았다 하며 신디사이저 소리를 제어합니다.</p>
+                    <div class="interactive-box mt-2">
+                        <button id="tactSwitchDemo" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded transition-colors">
+                            스위치 누르기!
+                        </button>
+                        <p id="tactSwitchStatus" class="text-sm mt-1">스위치 상태: 꺼짐 (마우스 클릭 또는 스페이스바/엔터 키로 조작)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="play" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">4. 나만의 신디사이저 연주! ???</h2>
+            <p class="mb-4">지금까지 배운 내용을 바탕으로 가상의 신디사이저를 연주해봅시다! 가변저항으로 음높이를 조절하고, 건반을 눌러 소리를 내보세요. 여러분만의 독특한 소리를 만들 수 있을 거예요!</p>
+            
+            <div class="bg-stone-200 p-6 rounded-lg shadow-inner max-w-2xl mx-auto">
+                <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">미니 신디사이저 시뮬레이터</h3>
+                
+                <div class="flex flex-col items-center space-y-6">
+                    <div>
+                        <label for="synthPitchKnob" class="block text-sm font-medium text-gray-700 mb-1">음높이 조절 (가변저항):</label>
+                        <input type="range" id="synthPitchKnob" min="1" max="100" value="50" class="w-64 accent-amber-500">
+                        <p class="text-xs text-center mt-1">현재 값: <span id="synthPitchValue" class="font-bold">50</span></p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button class="synth-button bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="C">도</button>
+                        <button class="synth-button bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="E">미</button>
+                        <button class="synth-button bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg shadow transition-transform hover:scale-105" data-note="G">솔</button>
+                    </div>
+                    
+                    <div class="chart-container w-full h-48 mt-4">
+                        <canvas id="synthOutputCanvas"></canvas>
+                    </div>
+                    <p id="synthOutputStatus" class="mt-2 text-center font-semibold text-stone-700 h-6"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="summary" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">5. 핵심 정리 및 학습 팁 ??</h2>
+            <p class="mb-4">오늘 우리는 소리의 신비로운 세계부터 신디사이저의 작동 원리까지 많은 것을 배웠어요. 이 섹션에서는 주요 내용을 다시 한번 정리하고, 앞으로 더 재미있게 전자공학을 탐구할 수 있는 몇 가지 팁을 알려줄게요!</p>
+            
+            <div class="space-y-4">
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">오늘 배운 핵심 내용:</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li>소리는 물체의 <strong class="text-amber-600">진동</strong>으로 발생하며, 진동 속도(주파수)에 따라 높낮이가 결정돼요.</li>
+                        <li><strong class="text-amber-600">555 타이머</strong>는 규칙적인 신호를 만들어 소리의 기본 주파수를 생성해요.</li>
+                        <li><strong class="text-amber-600">OP-AMP</strong>는 작은 소리 신호를 크게 증폭시켜 우리가 들을 수 있게 해요.</li>
+                        <li><strong class="text-amber-600">저항</strong>은 전류를 제어하고, <strong class="text-amber-600">가변저항</strong>으로 음높이를 조절하며, <strong class="text-amber-600">택트 스위치</strong>로 소리를 켜고 끌 수 있어요.</li>
+                        <li>이 모든 부품들이 모여 신디사이저라는 악기가 된답니다!</li>
+                    </ul>
+                </div>
+                 <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">학습 진행 팁 (from 교육과정):</h3>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>시각 자료 활용:</strong> 그림이나 애니메이션을 보면 이해가 더 쉬워요. (이 앱처럼요!)</li>
+                        <li><strong>비유와 실생활 예시:</b> 어려운 원리도 주변의 물건에 비유하면 재미있게 배울 수 있어요.</li>
+                        <li><strong>질문은 언제나 환영:</strong> 궁금한 점이 있다면 주저하지 말고 질문하세요!</li>
+                        <li><strong>직접 체험하기:</strong> 직접 만져보고 조작해보는 것이 최고의 학습 방법이에요.</li>
+                        <li><strong>안전 제일:</strong> 전자 부품을 다룰 때는 항상 안전 수칙을 지켜주세요.</li>
+                    </ul>
+                </div>
+                <p class="mt-4 text-center font-semibold">여러분의 창의력과 호기심으로 더 멋진 소리와 장치들을 만들어보세요! ??</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center p-4 text-sm text-sky-800 mt-8">
+        ? 2025 DIY 신디사이저 학습 도우미. 즐거운 탐험 되세요!
+    </footer>
+
+    <script>
+        const sections = ['sound', 'heart', 'hands', 'play', 'summary'];
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const contentSections = document.querySelectorAll('.content-section');
+        let currentActiveSectionId = 'sound'; // 현재 활성화된 섹션 ID를 추적하는 변수
+
+        function showSection(sectionId) {
+            contentSections.forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(sectionId)) {
+                    button.classList.add('active');
+                }
+            });
+            currentActiveSectionId = sectionId; // 현재 활성화된 섹션 업데이트
+            window.scrollTo(0, 0);
+
+            // 섹션이 변경될 때 캔버스 크기 재설정 및 초기화
+            if (sectionId === 'sound') {
+                setupWaveCanvas();
+            } else if (sectionId === 'play') {
+                setupSynthCanvas();
+            }
+        }
+
+        // showSection('sound'); // 이 초기 호출을 window.onload로 옮김
+
+        let audioContext;
+        let oscillator;
+        let gainNode;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioContext.createGain();
+                gainNode.connect(audioContext.destination);
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }
+
+        function playTone(frequency, duration = 0) {
+            initAudio();
+            if (oscillator) {
+                try {
+                    oscillator.stop();
+                    oscillator.disconnect();
+                } catch (e) {}
+            }
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
+            oscillator.start();
+
+            if (duration > 0) {
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+                oscillator.stop(audioContext.currentTime + duration);
+            }
+        }
+
+        function stopTone() {
+            if (oscillator && audioContext && audioContext.state === 'running') {
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.01);
+                oscillator.stop(audioContext.currentTime + 0.02);
+                oscillator.disconnect();
+                oscillator = null;
+            }
+        }
+
+        const frequencySlider = document.getElementById('frequencySlider');
+        const frequencyValue = document.getElementById('frequencyValue');
+        const pitchDescription = document.getElementById('pitchDescription');
+        let waveCanvas; // Declare waveCanvas globally
+        let waveCtx;    // Declare waveCtx globally
+
+        function drawWave(frequency) {
+            if (!waveCtx || !waveCanvas) return; // Ensure context and canvas are available before drawing
+
+            const width = waveCanvas.width;
+            const height = waveCanvas.height;
+            const amplitude = height / 3;
+            const centerY = height / 2;
+            
+            waveCtx.clearRect(0, 0, width, height);
+            waveCtx.beginPath();
+            waveCtx.moveTo(0, centerY);
+
+            for (let x = 0; x < width; x++) {
+                const cycles = frequency / 5;
+                const angle = (x / width) * Math.PI * 2 * cycles;
+                const y = centerY + amplitude * Math.sin(angle);
+                waveCtx.lineTo(x, y);
+            }
+            waveCtx.strokeStyle = 'rgb(59, 130, 246)';
+            waveCtx.lineWidth = 2;
+            waveCtx.stroke();
+        }
+        
+        function setupWaveCanvas() {
+            waveCanvas = document.getElementById('waveCanvas'); // Assign here
+            if (waveCanvas) { // Check if element exists
+                waveCtx = waveCanvas.getContext('2d'); // Assign here
+                const container = waveCanvas.parentElement;
+                waveCanvas.width = container.clientWidth;
+                waveCanvas.height = container.clientHeight;
+                drawWave(parseInt(frequencySlider.value));
+            }
+        }
+
+        frequencySlider.addEventListener('input', (event) => {
+            const freq = parseInt(event.target.value);
+            frequencyValue.textContent = freq;
+            drawWave(freq);
+            if (freq < 7) pitchDescription.textContent = "낮은 음 (저주파)";
+            else if (freq < 14) pitchDescription.textContent = "중간 음";
+            else pitchDescription.textContent = "높은 음 (고주파)";
+
+            const audioFreq = 100 + (freq - 1) * 50;
+            playTone(audioFreq, 0);
+        });
+
+        frequencySlider.addEventListener('mouseup', () => {
+            stopTone();
+        });
+        frequencySlider.addEventListener('touchend', () => {
+            stopTone();
+        });
+        frequencySlider.addEventListener('mouseleave', () => {
+            stopTone();
+        });
+        
+
+        const timerAnimation = document.getElementById('timerAnimation');
+        let timerPulseCount = 0;
+        setInterval(() => {
+            timerPulseCount++;
+            timerAnimation.textContent = `펄스 생성 중... (${'.'.repeat(timerPulseCount % 3 + 1)})`;
+        }, 500);
+
+        const opampAnimation = document.getElementById('opampAnimation');
+        let opampSignalSize = 10;
+        setInterval(() => {
+            opampSignalSize = opampSignalSize === 10 ? 20 : 10;
+            opampAnimation.innerHTML = `신호 증폭 중... <span style="font-size:${opampSignalSize}px">??</span>`;
+        }, 700);
+
+
+        const potentiometerDemo = document.getElementById('potentiometerDemo');
+        const potentiometerValue = document.getElementById('potentiometerValue');
+
+        potentiometerDemo.addEventListener('input', (event) => {
+            const val = parseInt(event.target.value);
+            potentiometerValue.textContent = val;
+            if (isTactSwitchOn) {
+                const audioFreq = 200 + (val / 100) * 1000;
+                if (oscillator) {
+                    oscillator.frequency.setValueAtTime(audioFreq, audioContext.currentTime);
+                } else {
+                    playTone(audioFreq, 0);
+                }
+            }
+        });
+
+
+        const tactSwitchDemo = document.getElementById('tactSwitchDemo');
+        const tactSwitchStatus = document.getElementById('tactSwitchStatus');
+        let isTactSwitchOn = false;
+        let isSpaceOrEnterPressed = false;
+
+        function handleTactSwitch(on) {
+            if (on && !isTactSwitchOn) {
+                isTactSwitchOn = true;
+                tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생!)';
+                tactSwitchDemo.classList.add('bg-red-500', 'hover:bg-red-600');
+                tactSwitchDemo.classList.remove('bg-sky-500', 'hover:bg-sky-600');
+                
+                const potVal = parseInt(potentiometerDemo.value);
+                const audioFreq = 200 + (potVal / 100) * 1000;
+                playTone(audioFreq, 0); 
+
+            } else if (!on && isTactSwitchOn) {
+                isTactSwitchOn = false;
+                tactSwitchStatus.textContent = '스위치 상태: 꺼짐 (마우스 클릭 또는 스페이스바/엔터 키로 조작)';
+                tactSwitchDemo.classList.remove('bg-red-500', 'hover:bg-red-600');
+                tactSwitchDemo.classList.add('bg-sky-500', 'hover:bg-sky-600');
+                stopTone();
+            }
+        }
+
+        tactSwitchDemo.addEventListener('mousedown', () => handleTactSwitch(true));
+        tactSwitchDemo.addEventListener('mouseup', () => handleTactSwitch(false));
+        tactSwitchDemo.addEventListener('mouseleave', () => {
+            if (isTactSwitchOn) handleTactSwitch(false);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && !isSpaceOrEnterPressed) {
+                event.preventDefault();
+                isSpaceOrEnterPressed = true;
+                handleTactSwitch(true);
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && isSpaceOrEnterPressed) {
+                isSpaceOrEnterPressed = false;
+                handleTactSwitch(false);
+            }
+        });
+
+
+        const synthPitchKnob = document.getElementById('synthPitchKnob');
+        const synthPitchValue = document.getElementById('synthPitchValue');
+        const synthButtons = document.querySelectorAll('.synth-button');
+        const synthOutputStatus = document.getElementById('synthOutputStatus');
+        let synthOutputCanvas; // Declare synthOutputCanvas globally
+        let synthCtx;    // Declare synthCtx globally
+
+        // 섹션 4의 파형 시각화 함수
+        function drawSynthWave(frequency) {
+            if (!synthCtx || !synthOutputCanvas) return; // Ensure context and canvas are available before drawing
+
+            const width = synthOutputCanvas.width;
+            const height = synthOutputCanvas.height;
+            const amplitude = height / 3;
+            const centerY = height / 2;
+            
+            synthCtx.clearRect(0, 0, width, height);
+            synthCtx.beginPath();
+            synthCtx.moveTo(0, centerY);
+
+            const visualCycles = frequency / 100;
+            for (let x = 0; x < width; x++) {
+                const angle = (x / width) * Math.PI * 2 * visualCycles;
+                const y = centerY + amplitude * Math.sin(angle);
+                synthCtx.lineTo(x, y);
+            }
+            synthCtx.strokeStyle = 'rgb(16, 185, 129)';
+            synthCtx.lineWidth = 2;
+            synthCtx.stroke();
+        }
+
+        function setupSynthCanvas() {
+            synthOutputCanvas = document.getElementById('synthOutputCanvas'); // Assign here
+            if (synthOutputCanvas) { // Check if element exists
+                synthCtx = synthOutputCanvas.getContext('2d'); // Assign here
+                const container = synthOutputCanvas.parentElement;
+                synthOutputCanvas.width = container.clientWidth;
+                synthOutputCanvas.height = container.clientHeight;
+                drawSynthWave(0);
+            }
+        }
+
+        const noteFrequencies = {
+            'C': 261.63,
+            'E': 329.63,
+            'G': 392.00
+        };
+
+        synthPitchKnob.addEventListener('input', (event) => {
+            synthPitchValue.textContent = event.target.value;
+        });
+
+        synthButtons.forEach(button => {
+            button.addEventListener('mousedown', () => {
+                const note = button.dataset.note;
+                const pitch = parseInt(synthPitchKnob.value);
+                
+                let baseFreq = noteFrequencies[note];
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
+                const finalFreq = baseFreq * pitchMultiplier;
+
+                synthOutputStatus.textContent = `${note} 음 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 주파수 표시로 변경
+                
+                playTone(finalFreq, 0);
+                drawSynthWave(finalFreq);
+                button.classList.add('ring-4', 'ring-yellow-300');
+            });
+            button.addEventListener('mouseup', () => {
+                synthOutputStatus.textContent = '대기 중...';
+                drawSynthWave(0);
+                button.classList.remove('ring-4', 'ring-yellow-300');
+                stopTone();
+            });
+            button.addEventListener('mouseleave', () => {
+                 if (synthOutputStatus.textContent.includes(button.dataset.note)) {
+                    synthOutputStatus.textContent = '대기 중...';
+                    drawSynthWave(0);
+                    button.classList.remove('ring-4', 'ring-yellow-300');
+                    stopTone();
+                 }
+            });
+            button.addEventListener('touchend', () => {
+                synthOutputStatus.textContent = '대기 중...';
+                drawSynthWave(0);
+                button.classList.remove('ring-4', 'ring-yellow-300');
+                stopTone();
+            });
+        });
+        
+        window.addEventListener('load', () => {
+            // DOM이 완전히 로드된 후 캔버스 초기화 및 첫 섹션 표시
+            setupWaveCanvas();
+            setupSynthCanvas();
+            showSection('sound');
+        });
+        window.addEventListener('resize', () => {
+            setupWaveCanvas();
+            setupSynthCanvas();
+        });
+
+    </script>
+</body>
+</html>
