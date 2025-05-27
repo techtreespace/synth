@@ -10,6 +10,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f0f0; /* Light gray background */
+            /* 모바일 텍스트 크기 조정을 위한 기본 폰트 크기 설정 */
+            @apply text-base sm:text-lg;
         }
         .tab-button {
             @apply px-4 py-2 font-semibold rounded-t-lg transition-colors duration-200 ease-in-out;
@@ -75,7 +77,7 @@
 <body class="flex flex-col min-h-screen bg-amber-50 text-stone-800 overflow-x-hidden">
     <header class="flex-shrink-0 bg-sky-700 text-white p-6 shadow-md sticky top-0 z-50">
         <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-            <h1 class="text-3xl font-bold">DIY 아날로그 신디사이저 탐험</h1>
+            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center sm:text-left mb-4 sm:mb-0">DIY 아날로그 신디사이저 탐험</h1>
             <nav class="mt-4 sm:mt-0">
                 <button class="tab-button active" onclick="showSection('sound')">1. 소리의 세계</button>
                 <button class="tab-button" onclick="showSection('heart')">2. 신디사이저의 심장</button>
@@ -125,7 +127,7 @@
             <div class="grid md:grid-cols-2 gap-6">
                 <div class="component-card">
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">555 타이머: 소리의 박자를 만드는 지휘자</h3>
-                    <p>555 타이머는 규칙적인 전기 신호(펄스)를 만들어내는 부품이에요. 우리 신디사이저에서는 이 펄스의 빠르기를 조절해서 소리의 높낮이, 즉 <strong class="text-amber-600">주파수</strong>를 결정하는 핵심 역할을 해요. 마치 물통에 물을 채웠다 비우는 것을 반복하며 일정한 간격을 만들어내는 것과 비슷하답니다.</p>
+                    <p><strong class="text-amber-600">555 타이머</strong>는 규칙적인 <strong class="text-amber-600">전기 신호(펄스)</strong>를 만들어내는 부품이에요.<br> 우리 신디사이저에서는 이 펄스의 빠르기를 조절해서 소리의 높낮이, 즉 <strong class="text-amber-600">주파수</strong>를 결정하는 핵심 역할을 해요. 마치 물통에 물을 채웠다 비우는 것을 반복하며 일정한 간격을 만들어내는 것과 비슷하답니다.</p>
                     <div class="heart-canvas-container mt-2">
                         <canvas id="timerAnimationCanvas"></canvas>
                     </div>
@@ -215,9 +217,8 @@
                         </div>
                         
                         <div class="w-full md:w-1/2 flex flex-col items-center space-y-4">
-                            <div id="pulseWidthControl" class="w-full max-w-xs"> <label for="pulseWidthKnob" class="block text-sm font-medium text-gray-700 mb-1">펄스 폭 조절 (듀티 사이클):</label>
+                            <div id="pulseWidthControl" class="w-full max-w-xs"> <label for="pulseWidthKnob" class="block text-sm font-medium text-gray-700 mb-1">펄스 폭 조절 (듀티 사이클): <span id="pulseWidthValue" class="font-bold">50</span>%</label>
                                 <input type="range" id="pulseWidthKnob" min="10" max="90" value="50" class="w-full accent-purple-500">
-                                <p class="text-xs text-center mt-1">현재 값: <span id="pulseWidthValue" class="font-bold">50</span>%</p>
                             </div>
 
                             <div class="w-full max-w-xs"> <label for="synthPitchKnob" class="block text-sm font-medium text-gray-700 mb-1">음높이 조절 (가변저항): <span id="synthPitchValue" class="font-bold">50</span></label>
@@ -284,7 +285,7 @@
     </main>
 
     <footer class="text-center p-4 text-sm text-sky-800 mt-8">
-        COPYRIGHT ‌TECHTREESPACE © 2017-2025. ALL RIGHTS RESERVED.
+        © 2025 DIY 신디사이저 학습 도우미. 즐거운 탐험 되세요!
     </footer>
 
     <script>
@@ -1075,4 +1076,3 @@
     </script>
 </body>
 </html>
-	
