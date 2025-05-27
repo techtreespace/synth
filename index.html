@@ -9,6 +9,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0; /* Light gray background */
         }
         .tab-button {
             @apply px-4 py-2 font-semibold rounded-t-lg transition-colors duration-200 ease-in-out;
@@ -49,12 +50,24 @@
             -webkit-user-select: none; /* Safari */
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard syntax */
-            touch-action: manipulation; /* 터치 이벤트 최적화: 탭 지연 제거 및 확대/축소 방지 */
+            touch-action: manipulation; /* 터치 이벤트 최적화: 탭 지연 제거 및 확대/확대 방지 */
         }
         /* 건반 버튼 크기 고정 및 내용 중앙 정렬 */
         .synth-button {
-            @apply w-24 h-20 flex items-center justify-center; /* 고정된 크기와 중앙 정렬 */
+            @apply w-24 h-20 flex items-center justify-center text-white text-lg font-bold; /* 고정된 크기와 중앙 정렬 */
             flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 함 */
+            background-image: linear-gradient(to bottom, #d1d5db, #6b7280); /* 기본 회색 그라데이션 */
+        }
+        /* Heart section canvas styling */
+        .heart-canvas-container {
+            height: 100px; /* Fixed height for animation canvases */
+            width: 100%;
+            background-color: #e0f2fe; /* Light blue background for clarity */
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Ensure waves don't overflow */
         }
     </style>
 </head>
@@ -102,28 +115,28 @@
         </div>
 
         <div id="heart" class="content-section hidden">
-            <h2 class="text-2xl font-bold text-sky-700 mb-4">2. 신디사이저의 심장: 소리 생성기 및 증폭기 ❤️</h2>
-            <p class="mb-4">신디사이저가 소리를 내는 데에는 핵심적인 역할을 하는 부품들이 있어요. 이들이 어떻게 신디사이저의 심장처럼 작동하는지 알아봅시다!</p>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 class="text-2xl font-bold text-sky-700 mb-4">2. 신디사이저의 심장: 555 타이머, 슈미트 트리거, OP-AMP ❤️</h2>
+            <p class="mb-4">신디사이저가 소리를 내는 데에는 핵심적인 역할을 하는 부품들이 있어요. 바로 '555 타이머', '슈미트 트리거'와 'OP-AMP'인데요, 이들이 어떻게 신디사이저의 심장처럼 작동하는지 알아봅시다!</p>
+            <div class="grid md:grid-cols-2 gap-6">
                 <div class="component-card">
-                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">1. 555 타이머: 소리의 박자를 만드는 지휘자</h3>
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">555 타이머: 소리의 박자를 만드는 지휘자</h3>
                     <p>555 타이머는 규칙적인 전기 신호(펄스)를 만들어내는 부품이에요. 우리 신디사이저에서는 이 펄스의 빠르기를 조절해서 소리의 높낮이, 즉 <strong class="text-amber-600">주파수</strong>를 결정하는 핵심 역할을 해요. 마치 물통에 물을 채웠다 비우는 것을 반복하며 일정한 간격을 만들어내는 것과 비슷하답니다.</p>
-                    <div id="timerAnimation" class="mt-2 h-16 bg-sky-100 rounded flex items-center justify-center text-sm text-sky-700">
-                        펄스 생성 중... (띠-띠-띠)
+                    <div class="heart-canvas-container mt-2">
+                        <canvas id="timerAnimationCanvas"></canvas>
                     </div>
                 </div>
                 <div class="component-card">
-                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">2. 슈미트 트리거: 깨끗한 펄스 생성기</h3>
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">슈미트 트리거: 깨끗한 펄스 생성기</h3>
                     <p><strong class="text-amber-600">슈미트 트리거(Schmitt Trigger)</strong>는 불안정한 아날로그 신호를 깨끗하고 안정적인 <strong class="text-amber-600">사각파 펄스</strong>로 변환하는 데 사용돼요. 특정 전압(임계값)을 넘으면 출력이 바뀌는 방식으로, 발진 회로를 구성하여 직접 소리(사각파)를 만들 수 있습니다.</p>
-                    <div id="schmittTriggerAnimation" class="mt-2 h-16 bg-purple-100 rounded flex items-center justify-center text-sm text-purple-700">
-                        사각파 펄스 생성 중... (삐-삐-삐)
+                    <div class="heart-canvas-container mt-2">
+                        <canvas id="schmittTriggerAnimationCanvas"></canvas>
                     </div>
                 </div>
                 <div class="component-card">
-                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">3. OP-AMP (LM358/LM386): 신호 증폭 및 합성</h3>
-                    <p><strong class="text-amber-600">OP-AMP (연산 증폭기)</strong>는 작은 전기 신호를 크게 <strong class="text-amber-600">증폭</strong>하는 핵심 부품이에요. LM358과 같은 OP-AMP는 발진 회로를 구성하여 소리를 직접 만들 수도 있고, 여러 소리 신호를 <strong class="text-amber-600">합성(Mixing)</strong>하는 데에도 사용됩니다. <strong class="text-amber-600">LM386</strong>은 특히 스피커를 구동할 수 있도록 소리 신호를 강력하게 <strong class="text-amber-600">증폭</strong>하는 데 특화된 오디오 전력 증폭기입니다.</p>
-                    <div id="lm386Animation" class="mt-2 h-16 bg-green-100 rounded flex items-center justify-center text-sm text-green-700">
-                        소리 증폭 중... (볼륨 업!)
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">OP-AMP (연산 증폭기): 소리를 키워주는 스피커</h3>
+                    <p>555 타이머가 만든 소리 신호는 아직 너무 작아서 잘 들리지 않아요. 이때 OP-AMP가 등장합니다! OP-AMP는 이 작은 신호를 <strong class="text-amber-600">아주 크게 키워주는(증폭하는)</strong> 역할을 해요. 마이크로 목소리를 크게 만드는 것처럼요. 덕분에 우리는 신디사이저 소리를 스피커로 들을 수 있게 된답니다.</p>
+                    <div id="opampAnimation" class="mt-2 h-16 bg-emerald-100 rounded flex items-center justify-center text-sm text-emerald-700">
+                        신호 증폭 중... (소리가 커집니다!)
                     </div>
                 </div>
             </div>
@@ -134,8 +147,18 @@
             <p class="mb-4">신디사이저를 직접 조작하고 소리를 다양하게 만들기 위해서는 여러 부품들이 필요해요. 전기 흐름을 조절하는 '저항', 소리 높낮이를 바꾸는 '가변저항', 소리를 켜고 끄는 '택트 스위치'에 대해 알아볼까요?</p>
             <div class="grid md:grid-cols-3 gap-6">
                 <div class="component-card">
-                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">저항: 전기 흐름의 문지기</h3>
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">저항: 전기 흐름의 문지기 & 펄스 폭 조절</h3>
                     <p>저항은 전기 회로에서 전류의 양을 조절하거나 전압을 나누는 역할을 해요. 마치 수도꼭지로 물의 양을 조절하듯, 저항은 전기 에너지의 흐름을 <strong class="text-amber-600">적절하게 제어</strong>합니다. 555 타이머의 작동 속도 조절에도 관여해요.</p>
+                    <p class="mt-2 text-sm">또한, 사각파의 <strong class="text-amber-600">펄스 폭(Duty Cycle)</strong>은 파형이 '켜져 있는' 시간의 비율을 의미하며, 이는 소리의 <strong class="text-amber-600">음색(Timbre)</strong>을 변화시킵니다. 555 타이머와 같은 발진 회로에서는 저항값을 조절하여 이 펄스 폭을 변경할 수 있습니다. 예를 들어, 펄스 폭이 좁아지면 날카로운 소리가, 넓어지면 더 풍부한 소리가 날 수 있습니다.</p>
+                    <div class="interactive-box mt-4">
+                        <h4 class="text-lg font-semibold mb-2">펄스 폭 조절 체험</h4>
+                        <label for="handsPulseWidthKnob" class="block text-sm font-medium text-gray-700 mb-1">펄스 폭 (듀티 사이클):</label>
+                        <input type="range" id="handsPulseWidthKnob" min="10" max="90" value="50" class="w-full accent-purple-500">
+                        <p class="text-sm mt-1">현재 값: <span id="handsPulseWidthValue" class="font-bold text-sky-600">50</span>%</p>
+                        <div class="chart-container mt-4 h-24 max-h-24">
+                            <canvas id="handsPulseWidthCanvas"></canvas>
+                        </div>
+                    </div>
                 </div>
                 <div class="component-card">
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">가변저항: 소리 높낮이 마법사</h3>
@@ -143,7 +166,7 @@
                      <div class="interactive-box mt-2">
                         <label for="potentiometerDemo" class="block text-sm font-medium text-gray-700">가변저항 체험:</label>
                         <input type="range" id="potentiometerDemo" min="0" max="100" value="50" class="w-full accent-amber-500 mt-1">
-                        <p class="text-sm mt-1">저항 값: <span id="potentiometerValue" class="font-bold text-sky-600">50</span>% (택트 스위치를 누른 상태에서 조절)</p>
+                        <p class="text-sm mt-1">저항 값: <span id="potentiometerValue" class="font-bold text-sky-600">50</span>%</p>
                     </div>
                 </div>
                 <div class="component-card">
@@ -153,7 +176,7 @@
                         <button id="tactSwitchDemo" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded transition-colors">
                             스위치 누르기!
                         </button>
-                        <p id="tactSwitchStatus" class="text-sm mt-1">스위치 상태: 꺼짐 (마우스 클릭 또는 스페이스바/엔터 키로 조작)</p>
+                        <p id="tactSwitchStatus" class="text-sm mt-1">스위치 상태: 꺼짐</p>
                     </div>
                 </div>
             </div>
@@ -161,10 +184,10 @@
 
         <div id="play" class="content-section hidden">
             <h2 class="text-2xl font-bold text-sky-700 mb-4">4. 나만의 신디사이저 연주! 🎹✨</h2>
-            <p class="mb-4">지금까지 배운 내용을 바탕으로 가상의 신디사이저를 연주해봅시다! 가변저항으로 음높이를 조절하고, 건반을 눌러 소리를 내보세요. 여러분만의 독특한 소리를 만들 수 있을 거예요!</p>
+            <p class="mb-4">지금까지 배운 내용을 바탕으로 가상의 신디사이저를 연주해봅시다! 가변저항으로 음높이를 조절하고, 택트 스위치로 소리를 내보세요. 여러분만의 독특한 소리를 만들 수 있을 거예요!</p>
             
             <div class="bg-stone-200 p-6 rounded-lg shadow-inner max-w-2xl mx-auto">
-                <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">미니 신디사이저 시뮬레이터</h3>
+                <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">아날로그 신디사이저 시뮬레이터</h3>
                 
                 <div class="flex flex-col items-center space-y-6">
                     <div class="flex flex-wrap justify-center gap-4 mb-4">
@@ -184,6 +207,11 @@
                             <input type="radio" name="waveformType" value="triangle" class="form-radio text-sky-600 accent-sky-600">
                             <span class="ml-2 text-sm font-medium text-gray-700">삼각파 (Triangle)</span>
                         </label>
+                    </div>
+
+                    <div id="pulseWidthControl" class="w-64 mx-auto hidden"> <label for="pulseWidthKnob" class="block text-sm font-medium text-gray-700 mb-1">펄스 폭 조절 (듀티 사이클):</label>
+                        <input type="range" id="pulseWidthKnob" min="10" max="90" value="50" class="w-full accent-purple-500">
+                        <p class="text-xs text-center mt-1">현재 값: <span id="pulseWidthValue" class="font-bold">50</span>%</p>
                     </div>
 
                     <div>
@@ -231,6 +259,7 @@
                     <ul class="list-disc list-inside space-y-1 text-sm">
                         <li>소리는 물체의 <strong class="text-amber-600">진동</strong>으로 발생하며, 진동 속도(주파수)에 따라 높낮이가 결정돼요.</li>
                         <li><strong class="text-amber-600">555 타이머</strong>는 규칙적인 신호를 만들어 소리의 기본 주파수를 생성해요.</li>
+                        <li><strong class="text-amber-600">슈미트 트리거</strong>는 불안정한 신호를 깨끗한 사각파 펄스로 변환하여 소리를 명확하게 만들어줘요.</li>
                         <li><strong class="text-amber-600">OP-AMP</strong>는 작은 소리 신호를 크게 증폭시켜 우리가 들을 수 있게 해요.</li>
                         <li><strong class="text-amber-600">저항</strong>은 전류를 제어하고, <strong class="text-amber-600">가변저항</strong>으로 음높이를 조절하며, <strong class="text-amber-600">택트 스위치</strong>로 소리를 켜고 끌 수 있어요.</li>
                         <li>이 모든 부품들이 모여 신디사이저라는 악기가 된답니다!</li>
@@ -240,7 +269,7 @@
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">학습 진행 팁 (from 교육과정):</h3>
                     <ul class="list-disc list-inside space-y-1 text-sm">
                         <li><strong>시각 자료 활용:</strong> 그림이나 애니메이션을 보면 이해가 더 쉬워요. (이 앱처럼요!)</li>
-                        <li><strong>비유와 실생활 예시:</b> 어려운 원리도 주변의 물건에 비유하면 재미있게 배울 수 있어요.</li>
+                        <li><strong>비유와 실생활 예시:</strong> 어려운 원리도 주변의 물건에 비유하면 재미있게 배울 수 있어요.</li>
                         <li><strong>질문은 언제나 환영:</strong> 궁금한 점이 있다면 주저하지 말고 질문하세요!</li>
                         <li><strong>직접 체험하기:</strong> 직접 만져보고 조작해보는 것이 최고의 학습 방법이에요.</li>
                         <li><strong>안전 제일:</strong> 전자 부품을 다룰 때는 항상 안전 수칙을 지켜주세요.</li>
@@ -252,7 +281,7 @@
     </main>
 
     <footer class="text-center p-4 text-sm text-sky-800 mt-8">
-        COPYRIGHT TECHTREESPACE © 2025. ALL RIGHTS RESERVED.
+        © 2025 DIY 신디사이저 학습 도우미. 즐거운 탐험 되세요!
     </footer>
 
     <script>
@@ -261,12 +290,19 @@
         const contentSections = document.querySelectorAll('.content-section');
         let currentActiveSectionId = 'sound'; // 현재 활성화된 섹션 ID를 추적하는 변수
 
+        // 애니메이션 프레임 ID를 저장하여 중지할 수 있도록 합니다.
+        let timerAnimationId = null;
+        let schmittAnimationId = null;
+
         function showSection(sectionId) {
+            // 모든 섹션 숨기기
             contentSections.forEach(section => {
                 section.classList.add('hidden');
             });
+            // 선택된 섹션 보이기
             document.getElementById(sectionId).classList.remove('hidden');
 
+            // 탭 버튼 활성화 상태 업데이트
             tabButtons.forEach(button => {
                 button.classList.remove('active');
                 if (button.getAttribute('onclick').includes(sectionId)) {
@@ -274,13 +310,31 @@
                 }
             });
             currentActiveSectionId = sectionId; // 현재 활성화된 섹션 업데이트
-            window.scrollTo(0, 0);
+            window.scrollTo(0, 0); // 스크롤 맨 위로
 
-            // 섹션이 변경될 때 캔버스 크기 재설정 및 초기화
+            // 섹션에 따라 캔버스 초기화 또는 애니메이션 시작/중지
             if (sectionId === 'sound') {
                 setupWaveCanvas();
             } else if (sectionId === 'play') {
                 setupSynthCanvas();
+                // 'play' 섹션으로 이동 시, 현재 선택된 파형에 따라 펄스 폭 조절 UI 표시/숨김
+                const waveformRadios = document.querySelectorAll('input[name="waveformType"]');
+                let selectedRadio = Array.from(waveformRadios).find(radio => radio.checked);
+                if (selectedRadio && selectedRadio.value === 'square') {
+                    pulseWidthControl.classList.remove('hidden');
+                } else {
+                    pulseWidthControl.classList.add('hidden');
+                }
+            } else if (sectionId === 'hands') {
+                setupHandsPulseWidthCanvas();
+            }
+
+
+            // Heart 섹션 애니메이션 제어
+            if (sectionId === 'heart') {
+                startHeartAnimations();
+            } else {
+                stopHeartAnimations();
             }
         }
 
@@ -296,6 +350,7 @@
                 gainNode.connect(audioContext.destination);
                 gainNode.gain.setValueAtTime(0, audioContext.currentTime);
             }
+            // 오디오 컨텍스트가 일시 중지된 경우 재개
             if (audioContext.state === 'suspended') {
                 audioContext.resume();
             }
@@ -304,31 +359,68 @@
         // 선택된 파형 타입을 저장하는 전역 변수
         let selectedWaveformType = 'sine'; // 기본값은 사인파
 
-        function playTone(frequency, duration = 0) {
+        // Helper function to create a PeriodicWave for a square wave with variable duty cycle
+        function createSquarePeriodicWave(audioContext, dutyCycle) {
+            const numHarmonics = 2048; // Number of harmonics
+            const real = new Float32Array(numHarmonics + 1);
+            const imag = new Float32Array(numHarmonics + 1);
+
+            real[0] = 0; // DC component
+            imag[0] = 0;
+
+            for (let k = 1; k <= numHarmonics; k++) {
+                const nPiD = k * Math.PI * dutyCycle;
+                real[k] = (2 / (k * Math.PI)) * Math.sin(nPiD);
+                imag[k] = (2 / (k * Math.PI)) * (1 - Math.cos(nPiD));
+            }
+            return audioContext.createPeriodicWave(real, imag, { disableNormalization: true });
+        }
+
+        function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
             initAudio();
+            // 기존 오실레이터가 있다면 중지하고 연결 해제
             if (oscillator) {
                 try {
                     oscillator.stop();
                     oscillator.disconnect();
-                } catch (e) {}
+                } catch (e) { /* 이미 중지되었거나 연결 해제된 경우 무시 */ }
             }
             oscillator = audioContext.createOscillator();
-            oscillator.type = selectedWaveformType; // 선택된 파형 타입 적용
+
+            if (selectedWaveformType === 'square') {
+                // 사각파의 경우 PeriodicWave를 사용하여 듀티 사이클을 적용
+                const periodicWave = createSquarePeriodicWave(audioContext, dutyCycle);
+                oscillator.setPeriodicWave(periodicWave);
+            } else {
+                // 다른 파형의 경우 oscillator.type 사용
+                oscillator.type = selectedWaveformType;
+            }
+
+            // frequency가 유효한 숫자인지 확인
+            if (!isFinite(frequency)) {
+                console.error("Invalid frequency value:", frequency);
+                return; // 유효하지 않은 주파수 값일 경우 재생 중단
+            }
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
             
             oscillator.connect(gainNode);
+            // 부드러운 시작을 위한 게인 조절
             gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
             oscillator.start();
 
             if (duration > 0) {
+                // 지정된 시간 후 부드럽게 소리 끄기
                 gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
                 oscillator.stop(audioContext.currentTime + duration);
             }
         }
 
         function stopTone() {
-            if (oscillator && audioContext && audioContext.state === 'running') {
+            // oscillator가 존재하고, 시작된 상태인지 확인 (stop 호출 전에 start가 호출되었는지)
+            if (oscillator && audioContext && audioContext.state === 'running' && oscillator.playbackState !== 3 /* AudioBufferSourceNode.ENDED */) {
+                // 부드러운 종료를 위한 게인 조절
                 gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.01);
+                // 게인 감소 후 오실레이터 중지
                 oscillator.stop(audioContext.currentTime + 0.02);
                 oscillator.disconnect();
                 oscillator = null;
@@ -342,6 +434,7 @@
         let waveCtx;    
 
         function drawWave(frequency) {
+            // 캔버스 컨텍스트가 준비되지 않았다면 함수 종료
             if (!waveCtx || !waveCanvas) return; 
 
             const width = waveCanvas.width;
@@ -349,19 +442,18 @@
             const amplitude = height / 3;
             const centerY = height / 2;
             
-            waveCtx.clearRect(0, 0, width, height);
-            waveCtx.beginPath();
-            waveCtx.moveTo(0, centerY);
+            waveCtx.clearRect(0, 0, width, height); // 캔버스 지우기
+            waveCtx.beginPath(); // 새로운 경로 시작
+            waveCtx.moveTo(0, centerY); // 시작점 설정
 
+            // 사인파 그리기
             for (let x = 0; x < width; x++) {
-                const cycles = frequency / 5;
-                const angle = (x / width) * Math.PI * 2 * cycles;
-                const y = centerY + amplitude * Math.sin(angle);
+                const y = centerY + amplitude * Math.sin((x * frequency * Math.PI * 2) / (width * 5));
                 waveCtx.lineTo(x, y);
             }
-            waveCtx.strokeStyle = 'rgb(59, 130, 246)';
-            waveCtx.lineWidth = 2;
-            waveCtx.stroke();
+            waveCtx.strokeStyle = 'rgb(59, 130, 246)'; // 파란색 선
+            waveCtx.lineWidth = 2; // 선 두께
+            waveCtx.stroke(); // 선 그리기
         }
         
         function setupWaveCanvas() {
@@ -371,22 +463,24 @@
                 const container = waveCanvas.parentElement;
                 waveCanvas.width = container.clientWidth;
                 waveCanvas.height = container.clientHeight;
-                drawWave(parseInt(frequencySlider.value));
+                drawWave(parseInt(frequencySlider.value)); // 초기 파형 그리기
             }
         }
 
         frequencySlider.addEventListener('input', (event) => {
             const freq = parseInt(event.target.value);
             frequencyValue.textContent = freq;
-            drawWave(freq);
+            drawWave(freq); // 슬라이더 값에 따라 파형 업데이트
+            // 주파수 값에 따른 음높이 설명 업데이트
             if (freq < 7) pitchDescription.textContent = "낮은 음 (저주파)";
             else if (freq < 14) pitchDescription.textContent = "중간 음";
             else pitchDescription.textContent = "높은 음 (고주파)";
 
             const audioFreq = 100 + (freq - 1) * 50;
-            playTone(audioFreq, 0);
+            playTone(audioFreq, 0); // 소리 재생 (무한 재생)
         });
 
+        // 마우스/터치 이벤트 종료 시 소리 멈춤
         frequencySlider.addEventListener('mouseup', () => {
             stopTone();
         });
@@ -397,64 +491,130 @@
             stopTone();
         });
         
-        // Moved animation setup inside window.onload to ensure elements exist
-        window.addEventListener('load', () => {
-            // Existing setup calls
-            setupWaveCanvas();
-            setupSynthCanvas();
-            showSection('sound');
+        // Heart 섹션 애니메이션 관련 변수 및 함수
+        let timerAnimationCanvas, timerAnimationCtx;
+        let schmittTriggerAnimationCanvas, schmittTriggerAnimationCtx;
+        let animationTime = 0; // 애니메이션 시간 추적
 
-            // Animation setup
-            const timerAnimation = document.getElementById('timerAnimation');
-            if (timerAnimation) {
-                let timerPulseCount = 0;
-                setInterval(() => {
-                    timerPulseCount++;
-                    timerAnimation.textContent = `펄스 생성 중... (${'.'.repeat(timerPulseCount % 3 + 1)})`;
-                }, 500);
+        function drawHeartWaveform(ctx, canvas, type, time) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const amplitude = height / 3;
+            const centerY = height / 2;
+            const flowSpeed = 0.5; // 파형이 흘러가는 속도 조절
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+
+            // 파형을 흐르게 하기 위해 시간(time)을 x 축에 더해 위상 변화를 줍니다.
+            // Math.PI * 4는 캔버스 너비에 2주기(cycle)가 보이도록 설정
+            for (let x = 0; x < width; x++) {
+                let y;
+                const angle = ((x / width) * Math.PI * 4) + (time * flowSpeed); 
+
+                if (type === 'pulse') {
+                    // 펄스 파형 (낮은 듀티 사이클의 사각파)
+                    y = centerY + amplitude * (Math.sin(angle) > 0.8 ? 1 : -1); // 좁은 펄스
+                } else if (type === 'square') {
+                    // 사각파 파형 (50% 듀티 사이클)
+                    y = centerY + amplitude * (Math.sin(angle) > 0 ? 1 : -1);
+                }
+                ctx.lineTo(x, y);
             }
+            ctx.strokeStyle = 'rgb(59, 130, 246)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
 
+        function animateHeartWaves() {
+            animationTime += 0.1; // 시간 증가량 조절
+            if (timerAnimationCtx && timerAnimationCanvas) {
+                drawHeartWaveform(timerAnimationCtx, timerAnimationCanvas, 'pulse', animationTime);
+            }
+            if (schmittTriggerAnimationCtx && schmittTriggerAnimationCanvas) {
+                drawHeartWaveform(schmittTriggerAnimationCtx, schmittTriggerAnimationCanvas, 'square', animationTime);
+            }
+            timerAnimationId = requestAnimationFrame(animateHeartWaves);
+        }
+
+        function setupHeartCanvases() {
+            timerAnimationCanvas = document.getElementById('timerAnimationCanvas');
+            schmittTriggerAnimationCanvas = document.getElementById('schmittTriggerAnimationCanvas');
+
+            if (timerAnimationCanvas) {
+                timerAnimationCtx = timerAnimationCanvas.getContext('2d');
+                timerAnimationCanvas.width = timerAnimationCanvas.parentElement.clientWidth;
+                timerAnimationCanvas.height = timerAnimationCanvas.parentElement.clientHeight;
+            }
+            if (schmittTriggerAnimationCanvas) {
+                schmittTriggerAnimationCtx = schmittTriggerAnimationCanvas.getContext('2d');
+                schmittTriggerAnimationCanvas.width = schmittTriggerAnimationCanvas.parentElement.clientWidth;
+                schmittTriggerAnimationCanvas.height = schmittTriggerAnimationCanvas.parentElement.clientHeight;
+            }
+        }
+
+        function startHeartAnimations() {
+            setupHeartCanvases(); // 캔버스 초기화
+            if (timerAnimationId === null) { // 이미 실행 중이 아니면 시작
+                animationTime = 0; // 애니메이션 시간 초기화
+                animateHeartWaves();
+            }
+            // OP-AMP 애니메이션 시작 (기존 텍스트 애니메이션)
             const opampAnimation = document.getElementById('opampAnimation');
             if (opampAnimation) {
-                let opampSignalSize = 10;
-                setInterval(() => {
-                    opampSignalSize = opampSignalSize === 10 ? 20 : 10;
-                    opampAnimation.innerHTML = `신호 증폭 중... <span style="font-size:${opampSignalSize}px">🔊</span>`;
-                }, 700);
-            }
-
-            const schmittTriggerAnimation = document.getElementById('schmittTriggerAnimation');
-            if (schmittTriggerAnimation) {
-                let schmittPulseCount = 0;
-                setInterval(() => {
-                    schmittPulseCount++;
-                    schmittTriggerAnimation.textContent = `사각파 펄스 생성 중... (${'삐-'.repeat(schmittPulseCount % 3 + 1).slice(0, -1)})`;
-                }, 600);
-            }
-
-            const lm386Animation = document.getElementById('lm386Animation');
-            if (lm386Animation) {
                 let lm386SignalSize = 10;
-                setInterval(() => {
+                opampAnimation.animationInterval = setInterval(() => {
                     lm386SignalSize = lm386SignalSize === 10 ? 20 : 10;
-                    lm386Animation.innerHTML = `소리 증폭 중... <span style="font-size:${lm386SignalSize}px">🔊</span>`;
+                    opampAnimation.innerHTML = `신호 증폭 중... <span style="font-size:${lm386SignalSize}px">🔊</span>`;
                 }, 750);
             }
+        }
+
+        function stopHeartAnimations() {
+            if (timerAnimationId) {
+                cancelAnimationFrame(timerAnimationId);
+                timerAnimationId = null;
+            }
+            // OP-AMP 애니메이션 중지
+            const opampAnimation = document.getElementById('opampAnimation');
+            if (opampAnimation && opampAnimation.animationInterval) {
+                clearInterval(opampAnimation.animationInterval);
+                opampAnimation.innerHTML = `신호 증폭 중... (볼륨 업!)`; // 초기 텍스트로 되돌리기
+                opampAnimation.animationInterval = null;
+            }
+        }
+
+
+        // 기존 window.onload 내용
+        window.addEventListener('load', () => {
+            setupWaveCanvas();
+            setupSynthCanvas();
+            setupHandsPulseWidthCanvas(); // Hands section pulse width canvas setup
+            showSection('sound'); // 초기 섹션 설정
+
+            // Heart 섹션의 텍스트 애니메이션은 이제 startHeartAnimations/stopHeartAnimations에서 관리
+            // 여기서는 초기 설정만 남겨둠
         });
 
 
         const potentiometerDemo = document.getElementById('potentiometerDemo');
         const potentiometerValue = document.getElementById('potentiometerValue');
-
         potentiometerDemo.addEventListener('input', (event) => {
-            const val = parseInt(event.target.value);
-            potentiometerValue.textContent = val;
-            if (isTactSwitchOn) {
-                const audioFreq = 200 + (val / 100) * 1000;
+            potentiometerValue.textContent = event.target.value;
+            if (isTactOn) { // 택트 스위치가 켜져 있을 때만 소리 주파수 변경
+                const val = parseInt(event.target.value);
+                const audioFreq = 200 + (val / 100) * 1000; // 200Hz ~ 1200Hz 범위
                 if (oscillator) {
-                    oscillator.frequency.setValueAtTime(audioFreq, audioContext.currentTime);
-                } else {
-                    playTone(audioFreq, 0);
+                    // frequency가 유효한 숫자인지 확인
+                    if (isFinite(audioFreq)) {
+                        // hands 섹션의 택트 스위치 데모에서는 펄스 폭 조절을 사각파에만 적용
+                        const demoWaveformType = 'square'; // hands 섹션 데모는 사각파로 고정
+                        playTone(audioFreq, 0, handsCurrentPulseWidth / 100); // Pass duty cycle
+                    } else {
+                        console.error("Invalid audioFreq value from potentiometer:", audioFreq);
+                        stopTone();
+                    }
                 }
             }
         });
@@ -462,26 +622,29 @@
 
         const tactSwitchDemo = document.getElementById('tactSwitchDemo');
         const tactSwitchStatus = document.getElementById('tactSwitchStatus');
-        let isTactSwitchOn = false;
-        let isSpaceOrEnterPressed = false;
-
+        let isTactOn = false; // 택트 스위치 상태
+        
         function handleTactSwitch(on) {
-            if (on && !isTactSwitchOn) {
-                isTactSwitchOn = true;
+            if (on && !isTactOn) {
+                isTactOn = true;
                 tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생!)';
                 tactSwitchDemo.classList.add('bg-red-500', 'hover:bg-red-600');
                 tactSwitchDemo.classList.remove('bg-sky-500', 'hover:bg-sky-600');
                 
                 const potVal = parseInt(potentiometerDemo.value);
                 const audioFreq = 200 + (potVal / 100) * 1000;
-                playTone(audioFreq, 0); 
+                // hands 섹션의 택트 스위치 데모는 사각파와 펄스 폭 조절을 사용
+                const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
+                selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
+                playTone(audioFreq, 0, handsCurrentPulseWidth / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용
+                selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
 
-            } else if (!on && isTactSwitchOn) {
-                isTactSwitchOn = false;
+            } else if (!on && isTactOn) {
+                isTactOn = false;
                 tactSwitchStatus.textContent = '스위치 상태: 꺼짐 (마우스 클릭 또는 스페이스바/엔터 키로 조작)';
                 tactSwitchDemo.classList.remove('bg-red-500', 'hover:bg-red-600');
                 tactSwitchDemo.classList.add('bg-sky-500', 'hover:bg-sky-600');
-                stopTone();
+                stopTone(); // 소리 멈춤
             }
         }
 
@@ -492,7 +655,7 @@
         });
         tactSwitchDemo.addEventListener('mouseup', () => handleTactSwitch(false));
         tactSwitchDemo.addEventListener('mouseleave', () => {
-            if (isTactSwitchOn) handleTactSwitch(false);
+            if (isTactOn) handleTactSwitch(false); // 마우스가 버튼을 벗어났을 때 소리 멈춤
         });
 
         // 터치 이벤트 (모바일용)
@@ -501,18 +664,21 @@
             handleTactSwitch(true);
         }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
         tactSwitchDemo.addEventListener('touchend', () => handleTactSwitch(false));
-        // touchend 이후에 touchcancel도 고려할 수 있지만, 여기서는 간단하게 touchend만 사용
 
 
+        // 키보드 이벤트 (스페이스바/엔터)
+        let isSpaceOrEnterPressed = false; // 키 눌림 상태 추적
         document.addEventListener('keydown', (event) => {
+            // 현재 섹션이 'hands'이고 스페이스바 또는 엔터 키가 눌렸으며, 이전에 눌리지 않았다면
             if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && !isSpaceOrEnterPressed) {
-                event.preventDefault();
+                event.preventDefault(); // 기본 동작 방지 (예: 스페이스바 스크롤)
                 isSpaceOrEnterPressed = true;
                 handleTactSwitch(true);
             }
         });
 
         document.addEventListener('keyup', (event) => {
+            // 현재 섹션이 'hands'이고 스페이스바 또는 엔터 키가 떼졌으며, 이전에 눌린 상태였다면
             if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && isSpaceOrEnterPressed) {
                 isSpaceOrEnterPressed = false;
                 handleTactSwitch(false);
@@ -520,15 +686,30 @@
         });
 
 
-        const synthPitchKnob = document.getElementById('synthPitchKnob');
-        const synthPitchValue = document.getElementById('synthPitchValue');
+        let synthPitchKnob = document.getElementById('synthPitchKnob');
+        let synthPitchValue = document.getElementById('synthPitchValue');
         const synthButtons = document.querySelectorAll('.synth-button');
-        const synthOutputStatus = document.getElementById('synthOutputStatus');
+        let synthOutputStatus = document.getElementById('synthOutputStatus');
+        // synthOutputCanvas와 synthCtx를 let으로 변경하여 재할당 가능하도록 함
         let synthOutputCanvas; 
         let synthCtx;    
 
+        // Pulse Width Control elements for 'play' section
+        const pulseWidthControl = document.getElementById('pulseWidthControl');
+        const pulseWidthKnob = document.getElementById('pulseWidthKnob');
+        const pulseWidthValue = document.getElementById('pulseWidthValue');
+        let currentPulseWidth = 50; // Default 50% duty cycle for 'play' section
+
+        // Pulse Width Control elements for 'hands' section
+        let handsPulseWidthKnob; // Defined globally now
+        let handsPulseWidthValue; // Defined globally now
+        let handsPulseWidthCanvas; // Defined globally now
+        let handsPulseWidthCtx; // Defined globally now
+        let handsCurrentPulseWidth = 50; // Default 50% duty cycle for 'hands' section
+
         // 섹션 4의 파형 시각화 함수
-        function drawSynthWave(frequency) {
+        function drawSynthWave(frequency, type, dutyCycle = 50) {
+            // 캔버스 컨텍스트가 준비되지 않았다면 함수 종료
             if (!synthCtx || !synthOutputCanvas) return; 
 
             const width = synthOutputCanvas.width;
@@ -536,22 +717,31 @@
             const amplitude = height / 3;
             const centerY = height / 2;
             
-            synthCtx.clearRect(0, 0, width, height);
-            synthCtx.beginPath();
-            synthCtx.moveTo(0, centerY);
+            synthCtx.clearRect(0, 0, width, height); // 캔버스 지우기
+            synthCtx.beginPath(); // 새로운 경로 시작
+            synthCtx.moveTo(0, centerY); // 시작점 설정
 
             // 선택된 파형 타입에 따라 다른 파형을 그림
-            const visualCycles = frequency / 100; // 시각적 주파수 스케일
+            const visualCycles = frequency / 100; // 시각적 주파수 스케일 (적절히 조절)
+            const period = width / visualCycles; // 한 주기(cycle)의 픽셀 길이
+            const onWidth = period * (dutyCycle / 100); // ON 구간의 픽셀 길이
+
             for (let x = 0; x < width; x++) {
                 let y;
                 const angle = (x / width) * Math.PI * 2 * visualCycles; // 0에서 2*PI*cycles까지 변화
 
-                switch (selectedWaveformType) {
+                switch (type) { // 전달받은 type 사용
                     case 'sine':
                         y = centerY + amplitude * Math.sin(angle);
                         break;
                     case 'square':
-                        y = centerY + amplitude * (Math.sin(angle) > 0 ? 1 : -1);
+                        // 펄스 폭을 반영한 사각파 그리기
+                        const phaseInPeriod = (x % period);
+                        if (phaseInPeriod < onWidth) {
+                            y = centerY - amplitude; // High
+                        } else {
+                            y = centerY + amplitude; // Low
+                        }
                         break;
                     case 'sawtooth':
                         y = centerY - amplitude * (angle % (2 * Math.PI) / (2 * Math.PI) * 2 - 1);
@@ -569,9 +759,9 @@
                 }
                 synthCtx.lineTo(x, y);
             }
-            synthCtx.strokeStyle = 'rgb(16, 185, 129)';
-            synthCtx.lineWidth = 2;
-            synthCtx.stroke();
+            synthCtx.strokeStyle = 'rgb(16, 185, 129)'; // 초록색 선
+            synthCtx.lineWidth = 2; // 선 두께
+            synthCtx.stroke(); // 선 그리기
         }
 
         function setupSynthCanvas() {
@@ -581,69 +771,71 @@
                 const container = synthOutputCanvas.parentElement;
                 synthOutputCanvas.width = container.clientWidth;
                 synthOutputCanvas.height = container.clientHeight;
-                drawSynthWave(0);
+                drawSynthWave(0, selectedWaveformType, currentPulseWidth); // 초기 파형 그리기 (소리 없음)
             }
         }
 
+        // 'hands' 섹션의 펄스 폭 시각화 함수
+        function drawHandsPulseWave(dutyCycle) {
+            if (!handsPulseWidthCtx || !handsPulseWidthCanvas) return;
+
+            const width = handsPulseWidthCanvas.width;
+            const height = handsPulseWidthCanvas.height;
+            const amplitude = height / 3;
+            const centerY = height / 2;
+            
+            handsPulseWidthCtx.clearRect(0, 0, width, height);
+            handsPulseWidthCtx.beginPath();
+            handsPulseWidthCtx.moveTo(0, centerY);
+
+            const visualCycles = 2; // Fixed number of cycles for this demo
+            const period = width / visualCycles;
+            const onWidth = period * (dutyCycle / 100);
+
+            for (let x = 0; x < width; x++) {
+                const phaseInPeriod = (x % period);
+                let y;
+                if (phaseInPeriod < onWidth) {
+                    y = centerY - amplitude; // High
+                } else {
+                    y = centerY + amplitude; // Low
+                }
+                handsPulseWidthCtx.lineTo(x, y);
+            }
+            handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)'; // Purple color
+            handsPulseWidthCtx.lineWidth = 2;
+            handsPulseWidthCtx.stroke();
+        }
+
+        function setupHandsPulseWidthCanvas() {
+            handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
+            if (handsPulseWidthCanvas) {
+                handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+                const container = handsPulseWidthCanvas.parentElement;
+                handsPulseWidthCanvas.width = container.clientWidth;
+                handsPulseWidthCanvas.height = container.clientHeight;
+                drawHandsPulseWave(handsCurrentPulseWidth);
+            }
+        }
+
+
         // 음계별 주파수 정의 (C4 기준)
         const noteFrequencies = {
-            'C4': 261.63, // 도1
-            'D4': 293.66, // 레1
-            'E4': 329.63, // 미1
-            'F4': 349.23, // 파1
-            'G4': 392.00, // 솔1
-            'A4': 440.00, // 라1 (기준음)
-            'B4': 493.88, // 시1
             'C5': 523.25, // 도2
             'D5': 587.33, // 레2
             'E5': 659.25, // 미2
             'F5': 698.46, // 파2
             'G5': 783.99, // 솔2
             'A5': 880.00, // 라2
-            'B5': 987.77  // 시2
+            'B5': 987.77,  // 시2
+            'C4': 261.63, // 도1
+            'D4': 293.66, // 레1
+            'E4': 329.63, // 미1
+            'F4': 349.23, // 파1
+            'G4': 392.00, // 솔1
+            'A4': 440.00, // 라1 (기준음)
+            'B4': 493.88  // 시1
         };
-
-        // 음표 이름과 옥타브를 기반으로 색상 클래스를 반환하는 함수
-        const noteColorMap = {
-            'C': 'emerald',
-            'D': 'teal',
-            'E': 'sky',
-            'F': 'indigo',
-            'G': 'purple',
-            'A': 'pink',
-            'B': 'red'
-        };
-
-        function getNoteColorClass(noteFull) {
-            const noteName = noteFull.slice(0, -1); // 예: 'C' (C4에서)
-            const octave = parseInt(noteFull.slice(-1)); // 예: 4 (C4에서)
-
-            const baseColor = noteColorMap[noteName];
-            if (!baseColor) return 'bg-gray-500'; // Fallback
-
-            let colorVariant = '';
-            if (octave === 4) {
-                colorVariant = '500'; // 첫 번째 옥타브 (C4-B4), 기본 밝기
-            } else if (octave === 5) {
-                colorVariant = '300'; // 두 번째 옥타브 (C5-B5), 더 밝게
-            } else {
-                colorVariant = '500'; // 기본값
-            }
-            return `bg-${baseColor}-${colorVariant}`;
-        }
-
-        // 초기 로드 시 건반 색상 설정
-        window.addEventListener('load', () => {
-            synthButtons.forEach(button => {
-                const noteFull = button.dataset.noteFull;
-                const colorClass = getNoteColorClass(noteFull);
-                button.classList.add(colorClass);
-            });
-            setupWaveCanvas();
-            setupSynthCanvas();
-            showSection('sound');
-        });
-
 
         // 섹션 4: 음높이 조절 슬라이더의 input 이벤트 리스너 수정
         synthPitchKnob.addEventListener('input', (event) => {
@@ -652,14 +844,22 @@
 
             // 현재 오실레이터가 활성화되어 소리가 재생 중이라면 주파수 업데이트
             if (oscillator && currentPlayingBaseFreq !== 0) {
-                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5; // 피치 조절 범위 (0.5배 ~ 2배)
                 const finalFreq = currentPlayingBaseFreq * pitchMultiplier;
-                oscillator.frequency.setValueAtTime(finalFreq, audioContext.currentTime);
+                // frequency가 유효한 숫자인지 다시 확인
+                if (isFinite(finalFreq)) {
+                    // playTone 호출 시 현재 펄스 폭 값 전달
+                    playTone(finalFreq, 0, currentPulseWidth / 100);
+                } else {
+                    console.error("Calculated finalFreq is non-finite:", finalFreq);
+                    stopTone(); // 유효하지 않으면 소리 중단
+                    return;
+                }
                 
                 // 상태 텍스트 및 파형도 업데이트
                 const activeNoteButton = document.querySelector('.synth-button.ring-4');
                 if (activeNoteButton) {
-                    const noteFull = activeNoteButton.dataset.noteFull;
+                    const noteFull = activeNoteButton.dataset.noteFull; // 'C4', 'D4' 등
                     const noteName = noteFull.slice(0, -1);
                     const octave = parseInt(noteFull.slice(-1));
                     
@@ -669,7 +869,7 @@
                     };
                     const displayNote = `${noteTextMap[noteName]}${octave - 3}`; // C4->도1, C5->도2
                     synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
-                    drawSynthWave(finalFreq);
+                    drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); // 파형 타입과 듀티 사이클 전달
                 }
             }
         });
@@ -678,32 +878,117 @@
         document.querySelectorAll('input[name="waveformType"]').forEach(radio => {
             radio.addEventListener('change', (event) => {
                 selectedWaveformType = event.target.value;
+
+                // 사각파 선택 시 펄스 폭 조절 슬라이더 표시/숨김
+                if (selectedWaveformType === 'square') {
+                    pulseWidthControl.classList.remove('hidden');
+                } else {
+                    pulseWidthControl.classList.add('hidden');
+                }
+
                 // 만약 현재 소리가 재생 중이라면 파형 타입 즉시 변경
-                if (oscillator) {
-                    oscillator.type = selectedWaveformType;
-                    // 상태 텍스트 및 파형 업데이트
-                    const activeNoteButton = document.querySelector('.synth-button.ring-4');
-                    if (activeNoteButton) {
-                        const noteFull = activeNoteButton.dataset.noteFull;
-                        const noteName = noteFull.slice(0, -1);
-                        const octave = parseInt(noteFull.slice(-1));
-                        const pitch = parseInt(synthPitchKnob.value);
-                        const finalFreq = noteFrequencies[noteFull] * (0.5 + (pitch / 100) * 1.5);
-                        
-                        // Hz 기반 표기를 위한 매핑
-                        const noteTextMap = {
-                            'C': '도', 'D': '레', 'E': '미', 'F': '파', 'G': '솔', 'A': '라', 'B': '시'
-                        };
-                        const displayNote = `${noteTextMap[noteName]}${octave - 3}`; // C4->도1, C5->도2
-                        synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
-                        drawSynthWave(finalFreq);
+                if (oscillator && currentPlayingBaseFreq !== 0) {
+                    const pitch = parseInt(synthPitchKnob.value);
+                    const finalFreq = currentPlayingBaseFreq * (0.5 + (pitch / 100) * 1.5);
+
+                    // Re-initialize oscillator with new type/periodic wave
+                    // playTone 호출 시 현재 펄스 폭 값 전달
+                    playTone(finalFreq, 0, currentPulseWidth / 100); // Replay with new type and current duty cycle
+                } else {
+                    // If no sound is playing, just update the visual representation for the selected waveform
+                    if (currentActiveSectionId === 'play') { // 'play' 섹션에 있을 때만 파형 시각화 업데이트
+                        drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                     }
                 }
             });
         });
 
+        // Pulse Width Slider Event Listener for 'play' section
+        pulseWidthKnob.addEventListener('input', (event) => {
+            currentPulseWidth = parseInt(event.target.value);
+            pulseWidthValue.textContent = currentPulseWidth;
 
+            // 소리가 재생 중이라면 파형만 업데이트
+            if (oscillator && currentPlayingBaseFreq !== 0) {
+                const pitch = parseInt(synthPitchKnob.value);
+                const finalFreq = currentPlayingBaseFreq * (0.5 + (pitch / 100) * 1.5);
+                drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth);
+                // 사각파인 경우에만 오디오 업데이트
+                if (selectedWaveformType === 'square') {
+                    playTone(finalFreq, 0, currentPulseWidth / 100);
+                }
+            } else {
+                // 소리가 재생 중이 아니라면, 현재 선택된 파형 타입이 사각파일 경우에만 파형 업데이트
+                if (selectedWaveformType === 'square' && currentActiveSectionId === 'play') {
+                     drawSynthWave(0, selectedWaveformType, currentPulseWidth); // 주파수 0으로 파형만 그림
+                }
+            }
+        });
+
+        // Pulse Width Slider Event Listener for 'hands' section
+        // Note: handsPulseWidthKnob, handsPulseWidthValue, handsPulseWidthCanvas, handsPulseWidthCtx are defined globally above
+        handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
+        handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
+        handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
+        handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+
+        if (handsPulseWidthKnob) {
+            handsPulseWidthKnob.addEventListener('input', (event) => {
+                handsCurrentPulseWidth = parseInt(event.target.value);
+                handsPulseWidthValue.textContent = handsCurrentPulseWidth;
+                drawHandsPulseWave(handsCurrentPulseWidth);
+
+                // If tact switch is on, update audio with new pulse width
+                if (isTactOn) {
+                    const potVal = parseInt(potentiometerDemo.value);
+                    const audioFreq = 200 + (potVal / 100) * 1000;
+                    const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
+                    selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
+                    playTone(audioFreq, 0, handsCurrentPulseWidth / 100);
+                    selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
+                }
+            });
+        }
+
+        // 음계별 HSL 색조 값 (Hue)
+        const noteHueMap = {
+            'C': 0,    // 빨강
+            'D': 30,   // 주황
+            'E': 60,   // 노랑
+            'F': 120,  // 초록
+            'G': 240,  // 파랑
+            'A': 270,  // 남색 (보라에 가까움)
+            'B': 300   // 보라
+        };
+
+        // 옥타브별 밝기 (Lightness) 값
+        const octaveLightness = {
+            '5': 80, // 높은 옥타브 (밝게)
+            '4': 60  // 낮은 옥타브 (진하게)
+        };
+
+        // 채도 (Saturation)는 고정값으로 설정
+        const fixedSaturation = 80; // %
+
+        function getNoteGradient(noteFull) {
+            const noteName = noteFull.slice(0, -1); // 'C', 'D' 등
+            const octave = noteFull.slice(-1);    // '4', '5'
+
+            const hue = noteHueMap[noteName] || 0; // 기본값 0 (빨강)
+            const lightness = octaveLightness[octave] || 70; // 기본값 70 (중간 밝기)
+
+            // 그라데이션을 위해 시작 색상과 끝 색상 정의
+            const startColor = `hsl(${hue}, ${fixedSaturation}%, ${lightness}%)`;
+            const endColor = `hsl(${hue}, ${fixedSaturation}%, ${lightness - 20}%)`; // 시작보다 20% 어둡게
+
+            return `linear-gradient(to bottom, ${startColor}, ${endColor})`;
+        }
+
+        // 건반 버튼에 색상 적용
         synthButtons.forEach(button => {
+            const noteFull = button.dataset.noteFull;
+            button.style.background = getNoteGradient(noteFull);
+
             // 마우스 이벤트 (PC용)
             button.addEventListener('mousedown', (event) => {
                 event.preventDefault(); // 기본 드래그/선택 방지
@@ -713,7 +998,7 @@
                 let baseFreq = noteFrequencies[noteFull];
                 currentPlayingBaseFreq = baseFreq; // 현재 재생 중인 음의 기본 주파수 저장
 
-                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5; // 피치 조절 범위 (0.5배 ~ 2배)
                 const finalFreq = baseFreq * pitchMultiplier;
 
                 const noteName = noteFull.slice(0, -1);
@@ -725,14 +1010,14 @@
 
                 synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
-                playTone(finalFreq, 0); // 무한 재생
-                drawSynthWave(finalFreq); // 소리 재생 시 파형 그림
-                button.classList.add('ring-4', 'ring-yellow-300');
+                playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달
+                drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); // 소리 재생 시 파형 그림
+                button.classList.add('ring-4', 'ring-yellow-300'); // 버튼에 테두리 효과
             });
             button.addEventListener('mouseup', () => {
                 synthOutputStatus.textContent = '대기 중...';
-                drawSynthWave(0);
-                button.classList.remove('ring-4', 'ring-yellow-300');
+                drawSynthWave(0, selectedWaveformType, currentPulseWidth); // 소리 멈춤 시 파형 초기화
+                button.classList.remove('ring-4', 'ring-yellow-300'); // 테두리 효과 제거
                 stopTone();
                 currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
@@ -740,7 +1025,7 @@
                  // 마우스가 버튼을 벗어났을 때, 해당 버튼이 활성화 상태였다면 소리 멈춤
                  if (button.classList.contains('ring-4')) {
                     synthOutputStatus.textContent = '대기 중...';
-                    drawSynthWave(0);
+                    drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                     button.classList.remove('ring-4', 'ring-yellow-300');
                     stopTone();
                     currentPlayingBaseFreq = 0;
@@ -759,32 +1044,29 @@
                 const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
-                const noteName = noteFull.slice(0, -1);
-                const octave = parseInt(noteFull.slice(-1));
-                const noteTextMap = {
-                    'C': '도', 'D': '레', 'E': '미', 'F': '파', 'G': '솔', 'A': '라', 'B': '시'
-                };
-                const displayNote = `${noteTextMap[noteName]}${octave - 3}`; // C4->도1, C5->도2
-
-                synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
+                synthOutputStatus.textContent = `${noteFull} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
-                playTone(finalFreq, 0);
-                drawSynthWave(finalFreq);
+                playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달
+                drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth);
                 button.classList.add('ring-4', 'ring-yellow-300');
             }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
 
             button.addEventListener('touchend', () => {
                 synthOutputStatus.textContent = '대기 중...';
-                drawSynthWave(0);
+                drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                 button.classList.remove('ring-4', 'ring-yellow-300');
                 stopTone();
                 currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
         });
         
+        // 윈도우 크기 변경 시 캔버스 크기 재설정
         window.addEventListener('resize', () => {
             setupWaveCanvas();
             setupSynthCanvas();
+            // Heart 섹션의 캔버스도 리사이즈 시 재설정
+            setupHeartCanvases();
+            setupHandsPulseWidthCanvas(); // Hands section pulse width canvas setup on resize
         });
 
     </script>
