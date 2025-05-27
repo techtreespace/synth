@@ -6,6 +6,7 @@
     <title>DIY 아날로그 신디사이저 탐험</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -72,13 +73,69 @@
             justify-content: center;
             overflow: hidden; /* Ensure waves don't overflow */
         }
+
+        /* Mobile navigation overlay styles */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); /* Semi-transparent black background */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transform: translateX(100%); /* Start off-screen to the right */
+            transition: transform 0.3s ease-in-out; /* Smooth transition */
+        }
+
+        .mobile-nav-overlay.open {
+            transform: translateX(0); /* Slide in */
+        }
+
+        .mobile-nav-overlay .close-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            cursor: pointer;
+            color: white;
+        }
+
+        .mobile-nav-overlay .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%; /* Take full width */
+            align-items: flex-start; /* Align items to the left */
+            padding-left: 2rem; /* Add left padding */
+        }
+
+        .mobile-nav-overlay .nav-links .tab-button {
+            @apply text-white text-2xl bg-transparent hover:bg-sky-700 rounded-lg py-3 px-6;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Add subtle separator */
+            text-align: left; /* Ensure text is left-aligned */
+            width: 100%; /* Ensure button takes full width of its container */
+        }
+        .mobile-nav-overlay .nav-links .tab-button:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-amber-50 text-stone-800 overflow-x-hidden">
-    <header class="flex-shrink-0 bg-sky-700 text-white p-6 shadow-md sticky top-0 z-50">
+    <header class="flex-shrink-0 bg-sky-700 text-white p-6 shadow-md sticky top-0 z-50 transition-transform duration-300 ease-in-out">
         <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
-            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center sm:text-left mb-4 sm:mb-0">DIY 아날로그 신디사이저 탐험</h1>
-            <nav class="mt-4 sm:mt-0">
+            <div class="flex justify-between items-center w-full sm:w-auto">
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-white text-center sm:text-left mb-0 sm:mb-0">DIY 아날로그 신디사이저 탐험</h1>
+                <button id="mobile-menu-toggle" class="sm:hidden text-white text-2xl focus:outline-none ml-4">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="hidden sm:flex mt-4 sm:mt-0">
                 <button class="tab-button active" onclick="showSection('sound')">1. 소리의 세계</button>
                 <button class="tab-button" onclick="showSection('heart')">2. 신디사이저의 심장</button>
                 <button class="tab-button" onclick="showSection('hands')">3. 신디사이저의 손과 발</button>
@@ -87,6 +144,19 @@
             </nav>
         </div>
     </header>
+
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay">
+        <button id="close-mobile-menu" class="close-btn">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="nav-links">
+            <button class="tab-button" onclick="showSection('sound')">1. 소리의 세계</button>
+            <button class="tab-button" onclick="showSection('heart')">2. 신디사이저의 심장</button>
+            <button class="tab-button" onclick="showSection('hands')">3. 신디사이저의 손과 발</button>
+            <button class="tab-button" onclick="showSection('play')">4. 나만의 신디사이저 연주!</button>
+            <button class="tab-button" onclick="showSection('summary')">5. 핵심 정리</button>
+        </div>
+    </div>
 
     <main class="flex-grow container mx-auto px-4 sm:px-8 lg:px-16 max-w-7xl flex flex-col overflow-hidden">
         <div id="sound" class="content-section">
@@ -285,7 +355,7 @@
     </main>
 
     <footer class="text-center p-4 text-sm text-sky-800 mt-8">
-        © 2025 DIY 신디사이저 학습 도우미. 즐거운 탐험 되세요!
+        COPYRIGHT ‌TECHTREESPACE © 2017-2025. ALL RIGHTS RESERVED.
     </footer>
 
     <script>
@@ -298,6 +368,37 @@
         window.timerAnimationId = null; // 'let' 제거 및 window 객체에 할당
         window.schmittAnimationId = null; // 'let' 제거 및 window 객체에 할당
 
+        // Mobile Navigation Elements
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+        const closeMobileMenu = document.getElementById('close-mobile-menu');
+        const mobileNavLinks = document.querySelector('#mobile-nav-overlay .nav-links');
+
+        function openMobileNav() {
+            mobileNavOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling background
+        }
+
+        function closeMobileNav() {
+            mobileNavOverlay.classList.remove('open');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+
+        // Event Listeners for Mobile Menu
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', openMobileNav);
+        }
+        if (closeMobileMenu) {
+            closeMobileMenu.addEventListener('click', closeMobileNav);
+        }
+        // Close mobile nav when a link is clicked
+        if (mobileNavLinks) {
+            mobileNavLinks.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', closeMobileNav);
+            });
+        }
+
+
         function showSection(sectionId) {
             // 모든 섹션 숨기기
             contentSections.forEach(section => {
@@ -306,13 +407,22 @@
             // 선택된 섹션 보이기
             document.getElementById(sectionId).classList.remove('hidden');
 
-            // 탭 버튼 활성화 상태 업데이트
-            tabButtons.forEach(button => {
+            // 탭 버튼 활성화 상태 업데이트 (데스크톱 메뉴)
+            document.querySelector('header nav').querySelectorAll('.tab-button').forEach(button => {
                 button.classList.remove('active');
                 if (button.getAttribute('onclick').includes(sectionId)) {
                     button.classList.add('active');
                 }
             });
+
+            // 탭 버튼 활성화 상태 업데이트 (모바일 오버레이 메뉴)
+            document.querySelector('#mobile-nav-overlay .nav-links').querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(sectionId)) {
+                    button.classList.add('active');
+                }
+            });
+
             currentActiveSectionId = sectionId; // 현재 활성화된 섹션 업데이트
             window.scrollTo(0, 0); // 스크롤 맨 위로
 
@@ -1071,6 +1181,30 @@
             // Heart 섹션의 캔버스도 리사이즈 시 재설정
             setupHeartCanvases();
             setupHandsPulseWidthCanvas(); // Hands section pulse width canvas setup on resize
+        });
+
+        // 헤더 숨기기/보이기 로직
+        let lastScrollTop = 0;
+        const header = document.querySelector('header');
+        const scrollThreshold = 50; // 스크롤 감지 임계값 (px)
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+            // 모바일 화면 (sm 미만)에서만 헤더 숨기기/보이기 적용
+            if (window.innerWidth < 640) { // Tailwind's 'sm' breakpoint is 640px
+                if (currentScroll > lastScrollTop && currentScroll > header.offsetHeight) {
+                    // 아래로 스크롤: 헤더 숨기기 (헤더 높이보다 많이 스크롤했을 때)
+                    header.classList.add('translate-y-full', '-top-full');
+                } else if (currentScroll < lastScrollTop) {
+                    // 위로 스크롤: 헤더 보이기
+                    header.classList.remove('translate-y-full', '-top-full');
+                }
+            } else {
+                // 데스크톱 화면에서는 항상 헤더가 보이도록 함
+                header.classList.remove('translate-y-full', '-top-full');
+            }
+            lastScrollTop = currentScroll;
         });
 
     </script>
