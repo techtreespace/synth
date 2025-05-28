@@ -548,6 +548,7 @@
 
         // initAudio 함수를 비동기 함수로 변경
         async function initAudio() {
+            console.log('initAudio called. Current AudioContext state:', audioContext ? audioContext.state : 'null');
             if (!audioContext) { // Only create context if it doesn't exist
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 gainNode = audioContext.createGain();
@@ -555,32 +556,29 @@
                 gainNode.gain.setValueAtTime(0, audioContext.currentTime);
                 console.log('AudioContext created. Initial state:', audioContext.state);
             }
-            // 오디오 컨텍스트가 일시 중지된 경우 재개 (await 추가)
+
+            // Attempt to resume if suspended or interrupted
             if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
                 console.log('Attempting to resume AudioContext from state:', audioContext.state);
                 try {
                     await audioContext.resume();
                     console.log('AudioContext resumed successfully. New state:', audioContext.state);
+                    // Play a very short, silent tone to keep AudioContext active on mobile
+                    if (audioContext.state === 'running') {
+                        const silentOscillator = audioContext.createOscillator();
+                        const silentGain = audioContext.createGain();
+                        silentOscillator.connect(silentGain);
+                        silentGain.connect(audioContext.destination);
+                        silentGain.gain.setValueAtTime(0.00001, audioContext.currentTime); // Very low volume
+                        silentOscillator.start(audioContext.currentTime);
+                        silentOscillator.stop(audioContext.currentTime + 0.001); // Very short duration
+                        console.log('Played silent tone to keep AudioContext active.');
+                    }
                 } catch (e) {
                     console.error('Failed to resume AudioContext:', e);
                 }
-            } else {
+            } else if (audioContext.state === 'running') {
                 console.log('AudioContext state is already active:', audioContext.state);
-            }
-            // Add a small delay and re-check if it's still suspended after resume attempt
-            // This is a fallback for browsers that might not immediately update state
-            if (audioContext.state !== 'running') {
-                console.warn('AudioContext not running immediately after resume attempt. Waiting a bit...');
-                await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
-                if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
-                    console.log('Retrying resume after short delay...');
-                    try {
-                        await audioContext.resume();
-                        console.log('AudioContext resumed successfully on retry. New state:', audioContext.state);
-                    } catch (e) {
-                        console.error('Failed to resume AudioContext on retry:', e);
-                    }
-                }
             }
             console.log('initAudio finished. Final AudioContext state:', audioContext.state);
         }
@@ -607,7 +605,7 @@
 
         // playTone 함수를 비동기 함수로 변경
         async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
-            console.log('playTone called with frequency:', frequency); // Added log
+            console.log('playTone called with frequency:', frequency, 'waveform:', selectedWaveformType, 'dutyCycle:', dutyCycle); // Added log
             await initAudio(); // Ensure audio context is initialized and resumed
 
             // Add a robust check and wait for the audio context to be truly running
@@ -890,6 +888,7 @@
         let isTactOn = false; // 택트 스위치 상태
         
         async function handleTactSwitch(on) { // async 추가
+            console.log('handleTactSwitch called. on:', on, 'isTactOn:', isTactOn); // Added log
             if (on && !isTactOn) {
                 isTactOn = true;
                 tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생!)';
@@ -915,6 +914,7 @@
 
         // 마우스 이벤트 (PC용)
         tactSwitchDemo.addEventListener('mousedown', (event) => {
+            console.log('Tact switch mousedown event fired.'); // Added log
             event.preventDefault(); // 기본 드래그/선택 방지
             handleTactSwitch(true);
         });
@@ -925,12 +925,14 @@
 
         // 터치 이벤트 (모바일용)
         tactSwitchDemo.addEventListener('touchstart', (event) => {
+            console.log('Tact switch touchstart event fired.'); // Added log
             event.preventDefault(); // 기본 텍스트 선택/줌 방지
             handleTactSwitch(true);
         }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
 
         // tactSwitchDemo에 대한 touchend 리스너 추가 (이전에 누락되었거나 잘못 배치됨)
         tactSwitchDemo.addEventListener('touchend', () => {
+            console.log('Tact switch touchend event fired.'); // Added log
             handleTactSwitch(false);
         });
         
@@ -1196,10 +1198,14 @@
 
         // Pulse Width Slider Event Listener for 'hands' section
         // Note: handsPulseWidthKnob, handsPulseWidthValue, handsPulseWidthCanvas, handsPulseWidthCtx are defined globally above
+        // `handsPulseWidthKnob`과 같은 요소는 DOM이 완전히 로드된 후에 접근해야 합니다.
+        // `setupHandsPulseWidthCanvas` 함수 내에서 이들을 초기화하는 것이 더 안전합니다.
+        // 이 부분은 이미 `setupHandsPulseWidthCanvas` 내에서 처리되고 있으므로, 전역 변수 선언만 남겨둡니다.
+        // 다만, `handsPulseWidthKnob`에 이벤트 리스너를 추가하기 전에 해당 요소가 존재함을 확인해야 합니다.
         handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
         handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
         handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
-        handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+        handsPulseWidthCtx = handsPulseWidthCanvas ? handsPulseWidthCanvas.getContext('2d') : null; // 캔버스가 존재할 때만 컨텍스트 가져오기
 
         if (handsPulseWidthKnob) {
             handsPulseWidthKnob.addEventListener('input', async (event) => { // async 추가
@@ -1261,6 +1267,7 @@
 
             // 마우스 이벤트 (PC용)
             button.addEventListener('mousedown', async (event) => { // async 추가
+                console.log('Synth button mousedown event fired for:', button.dataset.noteFull); // Added log
                 event.preventDefault(); // 기본 드래그/선택 방지
                 const noteFull = button.dataset.noteFull; // 'C4', 'D4' 등
                 const pitch = parseInt(synthPitchKnob.value);
@@ -1285,6 +1292,7 @@
                 button.classList.add('ring-4', 'ring-yellow-300'); // 버튼에 테두리 효과
             });
             button.addEventListener('mouseup', () => {
+                console.log('Synth button mouseup event fired.'); // Added log
                 synthOutputStatus.textContent = '대기 중...';
                 drawSynthWave(0, selectedWaveformType, currentPulseWidth); // 소리 멈춤 시 파형 초기화
                 button.classList.remove('ring-4', 'ring-yellow-300'); // 테두리 효과 제거
@@ -1292,6 +1300,7 @@
                 currentPlayingBaseFreq = 0; // 재생 멈추면 기본 주파수 초기화
             });
             button.addEventListener('mouseleave', () => {
+                 console.log('Synth button mouseleave event fired.'); // Added log
                  // 마우스가 버튼을 벗어났을 때, 해당 버튼이 활성화 상태였다면 소리 멈춤
                  if (button.classList.contains('ring-4')) {
                     synthOutputStatus.textContent = '대기 중...';
@@ -1304,6 +1313,7 @@
 
             // 터치 이벤트 (모바일용)
             button.addEventListener('touchstart', async (event) => { // async 추가
+                console.log('Synth button touchstart event fired for:', button.dataset.noteFull); // Added log
                 event.preventDefault(); // 기본 텍스트 선택/줌 방지
                 const noteFull = button.dataset.noteFull;
                 const pitch = parseInt(synthPitchKnob.value);
@@ -1322,6 +1332,7 @@
             }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
 
             button.addEventListener('touchend', () => {
+                console.log('Synth button touchend event fired.'); // Added log
                 synthOutputStatus.textContent = '대기 중...';
                 drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                 button.classList.remove('ring-4', 'ring-yellow-300');
