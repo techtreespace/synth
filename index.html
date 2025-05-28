@@ -265,7 +265,7 @@
             <div class="bg-stone-200 p-4 rounded-lg shadow-inner max-w-2xl mx-auto flex flex-col flex-grow"> <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">아날로그 신디사이저 시뮬레이터</h3>
                 
                 <div class="flex flex-col items-center space-y-4 flex-grow">
-                    <div class="grid grid-cols-2 gap-4 mb-4 w-full sm:flex sm:flex-wrap sm:justify-center">
+                    <div class="grid grid-cols-2 gap-4 mb-4 w-full justify-items-start sm:flex sm:flex-wrap sm:justify-center">
                         <label class="inline-flex items-center justify-start sm:justify-center">
                             <input type="radio" name="waveformType" value="sine" class="form-radio text-sky-600 accent-sky-600" checked>
                             <span class="ml-2 text-sm font-medium text-gray-700">사인파 (Sine)</span>
@@ -458,36 +458,51 @@
         let oscillator;
         let gainNode;
         let currentPlayingBaseFreq = 0; // 섹션 4에서 현재 재생 중인 음의 기본 주파수를 저장
+        let audioContextInitialized = false; // New flag to track if context has been created
 
         // initAudio 함수를 비동기 함수로 변경
         async function initAudio() {
-            if (!audioContext) {
+            if (!audioContextInitialized) { // Only create context once
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 gainNode = audioContext.createGain();
                 gainNode.connect(audioContext.destination);
                 gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                audioContextInitialized = true;
+                console.log('AudioContext created.');
             }
             // 오디오 컨텍스트가 일시 중지된 경우 재개 (await 추가)
-            if (audioContext.state === 'suspended') {
-                await audioContext.resume(); 
+            if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
+                console.log('Attempting to resume AudioContext...');
+                try {
+                    await audioContext.resume();
+                    console.log('AudioContext resumed successfully. State:', audioContext.state);
+                } catch (e) {
+                    console.error('Failed to resume AudioContext:', e);
+                }
+            } else {
+                console.log('AudioContext state is already:', audioContext.state);
             }
         }
 
         // Add a global listener for the first user interaction to resume the AudioContext
-        let audioContextResumed = false;
-        async function resumeAudioContext() { // resumeAudioContext도 async로 변경
-            if (!audioContextResumed) {
-                await initAudio(); // initAudio 호출 시 await 추가
-                audioContextResumed = true;
-                // Remove the listeners once the audio context is resumed
-                document.removeEventListener('click', resumeAudioContext);
-                document.removeEventListener('touchstart', resumeAudioContext);
+        let audioContextResumedGlobally = false; // Renamed for clarity
+        async function globalResumeAudioContext() {
+            if (!audioContextResumedGlobally) {
+                console.log('Global interaction detected, attempting initial AudioContext resume.');
+                await initAudio();
+                if (audioContext && audioContext.state === 'running') {
+                    audioContextResumedGlobally = true;
+                    // Remove the listeners once the audio context is resumed
+                    document.removeEventListener('click', globalResumeAudioContext);
+                    document.removeEventListener('touchstart', globalResumeAudioContext);
+                    console.log('Global AudioContext resume listener removed.');
+                }
             }
         }
 
         // Attach the global listeners
-        document.addEventListener('click', resumeAudioContext);
-        document.addEventListener('touchstart', resumeAudioContext);
+        document.addEventListener('click', globalResumeAudioContext);
+        document.addEventListener('touchstart', globalResumeAudioContext);
 
         // 선택된 파형 타입을 저장하는 전역 변수
         let selectedWaveformType = 'sine'; // 기본값은 사인파
@@ -511,39 +526,43 @@
 
         // playTone 함수를 비동기 함수로 변경
         async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
-            await initAudio(); // initAudio 호출 시 await 추가
-            // 기존 오실레이터가 있다면 중지하고 연결 해제
+            // Ensure audio context is running before playing
+            if (!audioContext || audioContext.state !== 'running') {
+                console.log('AudioContext not running, attempting to initialize/resume from playTone.');
+                await initAudio(); // Ensure it's running
+                if (!audioContext || audioContext.state !== 'running') {
+                    console.warn('AudioContext is still not running after attempt to resume. Cannot play tone.');
+                    return; // Cannot play if context is not running
+                }
+            }
+            
+            // Existing oscillator stopping logic
             if (oscillator) {
                 try {
                     oscillator.stop();
                     oscillator.disconnect();
-                } catch (e) { /* 이미 중지되었거나 연결 해제된 경우 무시 */ }
+                } catch (e) { /* Already stopped or disconnected, ignore */ }
             }
             oscillator = audioContext.createOscillator();
 
             if (selectedWaveformType === 'square') {
-                // 사각파의 경우 PeriodicWave를 사용하여 듀티 사이클을 적용
                 const periodicWave = createSquarePeriodicWave(audioContext, dutyCycle);
                 oscillator.setPeriodicWave(periodicWave);
             } else {
-                // 다른 파형의 경우 oscillator.type 사용
                 oscillator.type = selectedWaveformType;
             }
 
-            // frequency가 유효한 숫자인지 확인
             if (!isFinite(frequency)) {
                 console.error("Invalid frequency value:", frequency);
-                return; // 유효하지 않은 주파수 값일 경우 재생 중단
+                return;
             }
             oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
             
             oscillator.connect(gainNode);
-            // 부드러운 시작을 위한 게인 조절
             gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
             oscillator.start();
 
             if (duration > 0) {
-                // 지정된 시간 후 부드럽게 소리 끄기
                 gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
                 oscillator.stop(audioContext.currentTime + duration);
             }
