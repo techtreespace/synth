@@ -391,7 +391,8 @@
             mobileMenuToggle.addEventListener('click', openMobileNav);
         }
         if (closeMobileMenu) {
-            closeMobileMenu.addEventListener('click', closeMobileMenu);
+            // Fix: Correctly call closeMobileNav function
+            closeMobileMenu.addEventListener('click', closeMobileNav);
         }
         // Close mobile nav when a link is clicked
         if (mobileNavLinks) {
@@ -431,6 +432,17 @@
             // 섹션에 따라 캔버스 초기화 또는 애니메이션 시작/중지
             if (sectionId === 'sound') {
                 setupWaveCanvas();
+                // 1페이지로 돌아올 때 파형을 사인파로 설정하고 라디오 버튼도 업데이트
+                selectedWaveformType = 'sine';
+                const sineRadio = document.querySelector('input[name="waveformType"][value="sine"]');
+                if (sineRadio) {
+                    sineRadio.checked = true;
+                    // 사인파 선택 시 펄스 폭 조절 슬라이더 숨김
+                    const pulseWidthControl = document.getElementById('pulseWidthControl');
+                    if (pulseWidthControl) {
+                        pulseWidthControl.classList.add('hidden');
+                    }
+                }
             } else if (sectionId === 'play') {
                 setupSynthCanvas();
                 // 'play' 섹션으로 이동 시, 현재 선택된 파형에 따라 펄스 폭 조절 UI 표시/숨김
@@ -454,55 +466,49 @@
             }
         }
 
-        let audioContext;
+        let audioContext = null; // Initialize to null
         let oscillator;
         let gainNode;
         let currentPlayingBaseFreq = 0; // 섹션 4에서 현재 재생 중인 음의 기본 주파수를 저장
-        let audioContextInitialized = false; // New flag to track if context has been created
 
         // initAudio 함수를 비동기 함수로 변경
         async function initAudio() {
-            if (!audioContextInitialized) { // Only create context once
+            if (!audioContext) { // Only create context if it doesn't exist
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 gainNode = audioContext.createGain();
                 gainNode.connect(audioContext.destination);
                 gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                audioContextInitialized = true;
-                console.log('AudioContext created.');
+                console.log('AudioContext created. Initial state:', audioContext.state);
             }
             // 오디오 컨텍스트가 일시 중지된 경우 재개 (await 추가)
             if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
-                console.log('Attempting to resume AudioContext...');
+                console.log('Attempting to resume AudioContext from state:', audioContext.state);
                 try {
                     await audioContext.resume();
-                    console.log('AudioContext resumed successfully. State:', audioContext.state);
+                    console.log('AudioContext resumed successfully. New state:', audioContext.state);
                 } catch (e) {
                     console.error('Failed to resume AudioContext:', e);
                 }
             } else {
-                console.log('AudioContext state is already:', audioContext.state);
+                console.log('AudioContext state is already active:', audioContext.state);
             }
-        }
-
-        // Add a global listener for the first user interaction to resume the AudioContext
-        let audioContextResumedGlobally = false; // Renamed for clarity
-        async function globalResumeAudioContext() {
-            if (!audioContextResumedGlobally) {
-                console.log('Global interaction detected, attempting initial AudioContext resume.');
-                await initAudio();
-                if (audioContext && audioContext.state === 'running') {
-                    audioContextResumedGlobally = true;
-                    // Remove the listeners once the audio context is resumed
-                    document.removeEventListener('click', globalResumeAudioContext);
-                    document.removeEventListener('touchstart', globalResumeAudioContext);
-                    console.log('Global AudioContext resume listener removed.');
+            // Add a small delay and re-check if it's still suspended after resume attempt
+            // This is a fallback for browsers that might not immediately update state
+            if (audioContext.state !== 'running') {
+                console.warn('AudioContext not running immediately after resume attempt. Waiting a bit...');
+                await new Promise(resolve => setTimeout(resolve, 50)); // Wait 50ms
+                if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
+                    console.log('Retrying resume after short delay...');
+                    try {
+                        await audioContext.resume();
+                        console.log('AudioContext resumed successfully on retry. New state:', audioContext.state);
+                    } catch (e) {
+                        console.error('Failed to resume AudioContext on retry:', e);
+                    }
                 }
             }
+            console.log('initAudio finished. Final AudioContext state:', audioContext.state);
         }
-
-        // Attach the global listeners
-        document.addEventListener('click', globalResumeAudioContext);
-        document.addEventListener('touchstart', globalResumeAudioContext);
 
         // 선택된 파형 타입을 저장하는 전역 변수
         let selectedWaveformType = 'sine'; // 기본값은 사인파
@@ -526,14 +532,11 @@
 
         // playTone 함수를 비동기 함수로 변경
         async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
-            // Ensure audio context is running before playing
+            await initAudio(); // Ensure audio context is initialized and resumed
+
             if (!audioContext || audioContext.state !== 'running') {
-                console.log('AudioContext not running, attempting to initialize/resume from playTone.');
-                await initAudio(); // Ensure it's running
-                if (!audioContext || audioContext.state !== 'running') {
-                    console.warn('AudioContext is still not running after attempt to resume. Cannot play tone.');
-                    return; // Cannot play if context is not running
-                }
+                console.warn('AudioContext is not running. Cannot play tone.');
+                return; // Cannot play if context is not running
             }
             
             // Existing oscillator stopping logic
@@ -630,7 +633,10 @@
             else pitchDescription.textContent = "높은 음 (고주파)";
 
             const audioFreq = 100 + (freq - 1) * 50;
+            const originalSelectedWaveformType = selectedWaveformType; // Save current waveform type
+            selectedWaveformType = 'sine'; // Force sine wave for page 1
             await playTone(audioFreq, 0); // await 추가
+            selectedWaveformType = originalSelectedWaveformType; // Restore original waveform type
         });
 
         // 마우스/터치 이벤트 종료 시 소리 멈춤
@@ -759,12 +765,12 @@
                 const val = parseInt(event.target.value);
                 const audioFreq = 200 + (val / 100) * 1000; // 200Hz ~ 1200Hz 범위
                 if (oscillator) {
-                    // frequency가 유효한 숫자인지 확인
                     if (isFinite(audioFreq)) {
-                        // hands 섹션의 택트 스위치 데모에서는 펄스 폭 조절을 사각파에만 적용
-                        const demoWaveformType = 'square'; // hands 섹션 데모는 사각파로 고정
-                        // 펄스 폭 조절 슬라이더의 현재 값을 직접 읽어와 사용
-                        await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // await 추가
+                        // hands 섹션에서는 항상 사각파를 재생하도록 설정
+                        const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
+                        selectedWaveformType = 'square'; // 일시적으로 사각파로 설정
+                        await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100);
+                        selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
                     } else {
                         console.error("Invalid audioFreq value from potentiometer:", audioFreq);
                         stopTone();
@@ -787,11 +793,10 @@
                 
                 const potVal = parseInt(potentiometerDemo.value);
                 const audioFreq = 200 + (potVal / 100) * 1000;
-                // hands 섹션의 택트 스위치 데모는 사각파와 펄스 폭 조절을 사용
+                // hands 섹션에서는 항상 사각파를 재생하도록 설정
                 const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
-                selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
-                // handsCurrentPulseWidth 대신 handsPulseWidthKnob.value를 직접 읽어와 사용
-                await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용 // await 추가
+                selectedWaveformType = 'square'; // 일시적으로 사각파로 설정
+                await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100);
                 selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
 
             } else if (!on && isTactOn) {
@@ -1101,10 +1106,10 @@
                 if (isTactOn) {
                     const potVal = parseInt(potentiometerDemo.value);
                     const audioFreq = 200 + (potVal / 100) * 1000;
-                    // hands 섹션의 택트 스위치 데모는 사각파로 고정되어 펄스 폭 조절이 적용됩니다.
+                    // hands 섹션에서는 항상 사각파를 재생하도록 설정
                     const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
-                    selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
-                    await playTone(audioFreq, 0, handsCurrentPulseWidth / 100); // await 추가
+                    selectedWaveformType = 'square'; // 일시적으로 사각파로 설정
+                    await playTone(audioFreq, 0, handsCurrentPulseWidth / 100);
                     selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
                 }
             });
