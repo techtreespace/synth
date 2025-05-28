@@ -390,7 +390,7 @@
             mobileMenuToggle.addEventListener('click', openMobileNav);
         }
         if (closeMobileMenu) {
-            closeMobileMenu.addEventListener('click', closeMobileNav);
+            closeMobileMenu.addEventListener('click', closeMobileMenu);
         }
         // Close mobile nav when a link is clicked
         if (mobileNavLinks) {
@@ -751,7 +751,8 @@
                 // hands 섹션의 택트 스위치 데모는 사각파와 펄스 폭 조절을 사용
                 const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
                 selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
-                playTone(audioFreq, 0, handsCurrentPulseWidth / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용
+                // handsCurrentPulseWidth 대신 handsPulseWidthKnob.value를 직접 읽어와 사용
+                playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용
                 selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
 
             } else if (!on && isTactOn) {
