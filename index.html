@@ -264,20 +264,21 @@
             
             <div class="bg-stone-200 p-4 rounded-lg shadow-inner max-w-2xl mx-auto flex flex-col flex-grow"> <h3 class="text-xl font-semibold text-center text-stone-700 mb-4">아날로그 신디사이저 시뮬레이터</h3>
                 
-                <div class="flex flex-col items-center space-y-4 flex-grow"> <div class="flex flex-wrap justify-center gap-4 mb-4">
-                        <label class="inline-flex items-center">
+                <div class="flex flex-col items-center space-y-4 flex-grow">
+                    <div class="grid grid-cols-2 gap-4 mb-4 w-full sm:flex sm:flex-wrap sm:justify-center">
+                        <label class="inline-flex items-center justify-start sm:justify-center">
                             <input type="radio" name="waveformType" value="sine" class="form-radio text-sky-600 accent-sky-600" checked>
                             <span class="ml-2 text-sm font-medium text-gray-700">사인파 (Sine)</span>
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center justify-start sm:justify-center">
                             <input type="radio" name="waveformType" value="square" class="form-radio text-sky-600 accent-sky-600">
                             <span class="ml-2 text-sm font-medium text-gray-700">사각파 (Square)</span>
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center justify-start sm:justify-center">
                             <input type="radio" name="waveformType" value="sawtooth" class="form-radio text-sky-600 accent-sky-600">
                             <span class="ml-2 text-sm font-medium text-gray-700">톱니파 (Sawtooth)</span>
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center justify-start sm:justify-center">
                             <input type="radio" name="waveformType" value="triangle" class="form-radio text-sky-600 accent-sky-600">
                             <span class="ml-2 text-sm font-medium text-gray-700">삼각파 (Triangle)</span>
                         </label>
@@ -458,24 +459,25 @@
         let gainNode;
         let currentPlayingBaseFreq = 0; // 섹션 4에서 현재 재생 중인 음의 기본 주파수를 저장
 
-        function initAudio() {
+        // initAudio 함수를 비동기 함수로 변경
+        async function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 gainNode = audioContext.createGain();
                 gainNode.connect(audioContext.destination);
                 gainNode.gain.setValueAtTime(0, audioContext.currentTime);
             }
-            // 오디오 컨텍스트가 일시 중지된 경우 재개
+            // 오디오 컨텍스트가 일시 중지된 경우 재개 (await 추가)
             if (audioContext.state === 'suspended') {
-                audioContext.resume();
+                await audioContext.resume(); 
             }
         }
 
         // Add a global listener for the first user interaction to resume the AudioContext
         let audioContextResumed = false;
-        function resumeAudioContext() {
+        async function resumeAudioContext() { // resumeAudioContext도 async로 변경
             if (!audioContextResumed) {
-                initAudio(); // This will create and/or resume the audio context
+                await initAudio(); // initAudio 호출 시 await 추가
                 audioContextResumed = true;
                 // Remove the listeners once the audio context is resumed
                 document.removeEventListener('click', resumeAudioContext);
@@ -507,8 +509,9 @@
             return audioContext.createPeriodicWave(real, imag, { disableNormalization: true });
         }
 
-        function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
-            initAudio();
+        // playTone 함수를 비동기 함수로 변경
+        async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
+            await initAudio(); // initAudio 호출 시 await 추가
             // 기존 오실레이터가 있다면 중지하고 연결 해제
             if (oscillator) {
                 try {
@@ -598,7 +601,7 @@
             }
         }
 
-        frequencySlider.addEventListener('input', (event) => {
+        frequencySlider.addEventListener('input', async (event) => { // async 추가
             const freq = parseInt(event.target.value);
             frequencyValue.textContent = freq;
             drawWave(freq); // 슬라이더 값에 따라 파형 업데이트
@@ -608,7 +611,7 @@
             else pitchDescription.textContent = "높은 음 (고주파)";
 
             const audioFreq = 100 + (freq - 1) * 50;
-            playTone(audioFreq, 0); // 소리 재생 (무한 재생)
+            await playTone(audioFreq, 0); // await 추가
         });
 
         // 마우스/터치 이벤트 종료 시 소리 멈춤
@@ -731,7 +734,7 @@
 
         const potentiometerDemo = document.getElementById('potentiometerDemo');
         const potentiometerValue = document.getElementById('potentiometerValue');
-        potentiometerDemo.addEventListener('input', (event) => {
+        potentiometerDemo.addEventListener('input', async (event) => { // async 추가
             potentiometerValue.textContent = event.target.value;
             if (isTactOn) { // 택트 스위치가 켜져 있을 때만 소리 주파수 변경
                 const val = parseInt(event.target.value);
@@ -742,7 +745,7 @@
                         // hands 섹션의 택트 스위치 데모에서는 펄스 폭 조절을 사각파에만 적용
                         const demoWaveformType = 'square'; // hands 섹션 데모는 사각파로 고정
                         // 펄스 폭 조절 슬라이더의 현재 값을 직접 읽어와 사용
-                        playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); 
+                        await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // await 추가
                     } else {
                         console.error("Invalid audioFreq value from potentiometer:", audioFreq);
                         stopTone();
@@ -756,7 +759,7 @@
         const tactSwitchStatus = document.getElementById('tactSwitchStatus');
         let isTactOn = false; // 택트 스위치 상태
         
-        function handleTactSwitch(on) {
+        async function handleTactSwitch(on) { // async 추가
             if (on && !isTactOn) {
                 isTactOn = true;
                 tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생!)';
@@ -769,7 +772,7 @@
                 const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
                 selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
                 // handsCurrentPulseWidth 대신 handsPulseWidthKnob.value를 직접 읽어와 사용
-                playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용
+                await playTone(audioFreq, 0, parseInt(handsPulseWidthKnob.value) / 100); // 소리 재생 (무한), handsCurrentPulseWidth 적용 // await 추가
                 selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
 
             } else if (!on && isTactOn) {
@@ -974,7 +977,7 @@
         };
 
         // 섹션 4: 음높이 조절 슬라이더의 input 이벤트 리스너 수정
-        synthPitchKnob.addEventListener('input', (event) => {
+        synthPitchKnob.addEventListener('input', async (event) => { // async 추가
             const pitch = parseInt(event.target.value);
             synthPitchValue.textContent = pitch;
 
@@ -985,7 +988,7 @@
                 // frequency가 유효한 숫자인지 다시 확인
                 if (isFinite(finalFreq)) {
                     // playTone 호출 시 현재 펄스 폭 값 전달
-                    playTone(finalFreq, 0, currentPulseWidth / 100);
+                    await playTone(finalFreq, 0, currentPulseWidth / 100); // await 추가
                 } else {
                     console.error("Calculated finalFreq is non-finite:", finalFreq);
                     stopTone(); // 유효하지 않으면 소리 중단
@@ -1013,7 +1016,7 @@
 
         // 파형 선택 라디오 버튼 이벤트 리스너
         document.querySelectorAll('input[name="waveformType"]').forEach(radio => {
-            radio.addEventListener('change', (event) => {
+            radio.addEventListener('change', async (event) => { // async 추가
                 selectedWaveformType = event.target.value;
 
                 // 사각파 선택 시 펄스 폭 조절 슬라이더 표시/숨김
@@ -1030,7 +1033,7 @@
 
                     // Re-initialize oscillator with new type/periodic wave
                     // playTone 호출 시 현재 펄스 폭 값 전달
-                    playTone(finalFreq, 0, currentPulseWidth / 100); // Replay with new type and current duty cycle
+                    await playTone(finalFreq, 0, currentPulseWidth / 100); // Replay with new type and current duty cycle // await 추가
                 } else {
                     // If no sound is playing, just update the visual representation for the selected waveform
                     if (currentActiveSectionId === 'play') { // 'play' 섹션에 있을 때만 파형 시각화 업데이트
@@ -1041,7 +1044,7 @@
         });
 
         // Pulse Width Slider Event Listener for 'play' section
-        pulseWidthKnob.addEventListener('input', (event) => {
+        pulseWidthKnob.addEventListener('input', async (event) => { // async 추가
             currentPulseWidth = parseInt(event.target.value);
             pulseWidthValue.textContent = currentPulseWidth;
 
@@ -1052,7 +1055,7 @@
                 drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth);
                 // 사각파인 경우에만 오디오 업데이트
                 if (selectedWaveformType === 'square') {
-                    playTone(finalFreq, 0, currentPulseWidth / 100);
+                    await playTone(finalFreq, 0, currentPulseWidth / 100); // await 추가
                 }
             } else {
                 // 소리가 재생 중이 아니라면, 현재 선택된 파형 타입이 사각파일 경우에만 파형 업데이트
@@ -1070,7 +1073,7 @@
         handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
 
         if (handsPulseWidthKnob) {
-            handsPulseWidthKnob.addEventListener('input', (event) => {
+            handsPulseWidthKnob.addEventListener('input', async (event) => { // async 추가
                 handsCurrentPulseWidth = parseInt(event.target.value);
                 handsPulseWidthValue.textContent = handsCurrentPulseWidth;
                 drawHandsPulseWave(handsCurrentPulseWidth);
@@ -1082,7 +1085,7 @@
                     // hands 섹션의 택트 스위치 데모는 사각파로 고정되어 펄스 폭 조절이 적용됩니다.
                     const originalSelectedWaveformType = selectedWaveformType; // 원래 선택된 파형 타입 저장
                     selectedWaveformType = 'square'; // 일시적으로 사각파로 설정하여 PeriodicWave 사용
-                    playTone(audioFreq, 0, handsCurrentPulseWidth / 100);
+                    await playTone(audioFreq, 0, handsCurrentPulseWidth / 100); // await 추가
                     selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입 복원
                 }
             });
@@ -1128,7 +1131,7 @@
             button.style.background = getNoteGradient(noteFull);
 
             // 마우스 이벤트 (PC용)
-            button.addEventListener('mousedown', (event) => {
+            button.addEventListener('mousedown', async (event) => { // async 추가
                 event.preventDefault(); // 기본 드래그/선택 방지
                 const noteFull = button.dataset.noteFull; // 'C4', 'D4' 등
                 const pitch = parseInt(synthPitchKnob.value);
@@ -1148,7 +1151,7 @@
 
                 synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
-                playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달
+                await playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달 // await 추가
                 drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); // 소리 재생 시 파형 그림
                 button.classList.add('ring-4', 'ring-yellow-300'); // 버튼에 테두리 효과
             });
@@ -1171,7 +1174,7 @@
             });
 
             // 터치 이벤트 (모바일용)
-            button.addEventListener('touchstart', (event) => {
+            button.addEventListener('touchstart', async (event) => { // async 추가
                 event.preventDefault(); // 기본 텍스트 선택/줌 방지
                 const noteFull = button.dataset.noteFull;
                 const pitch = parseInt(synthPitchKnob.value);
@@ -1184,7 +1187,7 @@
 
                 synthOutputStatus.textContent = `${noteFull} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; // 파형 타입 추가
                 
-                playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달
+                await playTone(finalFreq, 0, currentPulseWidth / 100); // 펄스 폭 전달 // await 추가
                 drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth);
                 button.classList.add('ring-4', 'ring-yellow-300');
             }, { passive: false }); // passive: false를 통해 preventDefault()가 작동하도록 함
