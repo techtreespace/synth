@@ -152,73 +152,54 @@
             visibility: hidden;
             pointer-events: none; /* Prevent interaction when hidden */
         }
-        #main-page-overlay h2 {
-            @apply text-4xl sm:text-5xl font-extrabold mb-6 leading-tight; /* Added leading-tight for tighter heading line height */
+        #main-page-overlay h2 { /* Changed to be smaller, for "Welcome to" */
+            @apply text-4xl sm:text-5xl font-extrabold mb-4 leading-tight; /* Increased font size */
         }
-        /* #main-page-overlay p { -- Removed as paragraphs are now in a list --
-            @apply text-lg sm:text-xl mb-8 max-w-2xl leading-relaxed mx-auto;
-        } */
+        #main-page-overlay h1 { /* New style for "DIY Analog Synthesizer" */
+            @apply text-6xl sm:text-7xl md:text-8xl font-extrabold mb-8 leading-tight; /* Increased font size */
+        }
         #main-page-overlay button {
-            @apply bg-amber-400 hover:bg-amber-500 text-sky-900 text-2xl font-bold py-4 px-10 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 mt-8; /* Adjusted mt for spacing */
+            @apply bg-gray-300 hover:bg-gray-400 text-gray-800 text-2xl font-bold py-4 px-10 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 mt-8 border-2 border-gray-500; /* Adjusted mt for spacing, changed colors, added border */
         }
-        /* Main page image styling */
-        #main-page-overlay img {
-            @apply rounded-lg shadow-lg mb-8 max-w-full h-auto;
-        }
-        /* Main page graphic element styling */
-        #main-page-overlay .graphic-element {
-            @apply text-amber-300 text-6xl sm:text-7xl mb-6;
-        }
+        /* Removed Main page image styling */
+        /* Removed Main page graphic element styling */
         /* New content box styling */
         #main-page-overlay .content-box {
-            @apply bg-blue-800 p-6 rounded-lg shadow-xl max-w-3xl mx-auto text-white text-left; /* Added text-left for list items */
+            @apply bg-blue-800 p-6 rounded-lg shadow-xl max-w-3xl mx-auto text-white text-center; /* Changed text-left to text-center */
         }
-        #main-page-overlay .content-box h3 {
+        #main-page-overlay .content-box h3 { /* This was for "DIY 아날로그 신디사이저 프로젝트" - can be removed or repurposed */
             @apply text-2xl sm:text-3xl font-bold mb-4 text-center;
         }
-        #main-page-overlay .content-box ul {
-            @apply space-y-3 text-lg; /* Increased spacing and font size for list */
+        #main-page-overlay .content-box ul { /* This was for the bullet list - will be replaced by spans */
+            @apply space-y-3 text-lg;
         }
-        #main-page-overlay .content-box li {
+        #main-page-overlay .content-box li { /* This was for list items - will be replaced by spans */
             @apply flex items-start;
         }
-        #main-page-overlay .content-box li span:first-child { /* Icon styling */
+        #main-page-overlay .content-box li span:first-child { /* This was for icon styling - can be removed or repurposed */
             @apply text-amber-300 mr-3 text-xl sm:text-2xl;
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-amber-50 text-stone-800 overflow-x-hidden">
     <div id="main-page-overlay">
-        <div class="graphic-element">
-            <i class="fas fa-wave-square"></i>
-        </div>
-        <h2 class="text-amber-300">아날로그 신디사이저의 세계로 오신 것을 환영합니다!</h2>
-        <img src="https://placehold.co/600x400/1e3a8a/FFFFFF?text=Vintage+Synth" alt="Vintage Synthesizer" onerror="this.onerror=null;this.src='https://placehold.co/600x400/1e3a8a/FFFFFF?text=Image+Not+Found';" class="mb-8 max-w-full h-auto rounded-lg shadow-lg">
+        <h2 class="text-amber-300">Welcome to</h2>
+        <h1 class="text-white">DIY Analog Synthesizer</h1>
+
+        <div class="w-full max-w-md my-8 border-t-2 border-dashed border-white"></div>
 
         <div class="content-box">
-            <h3>DIY 아날로그 신디사이저 프로젝트</h3>
-            <ul class="text-lg space-y-3">
-                <li class="flex items-start">
-                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
-                    <span>아날로그 신디사이저는 20세기 중반 등장한 혁신적인 악기입니다.</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
-                    <span>아날로그 전자 부품으로 소리를 합성하고 변형하여 따뜻하고 풍부한 음색을 만듭니다.</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
-                    <span>팝, 록, 일렉트로닉, 영화 음악 등 다양한 장르에서 사랑받아온 악기입니다.</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
-                    <span>이 교육 서비스에서 신디사이저의 핵심 원리와 부품들을 쉽고 재미있게 탐험하고, 직접 소리를 만들어보세요!</span>
-                </li>
-            </ul>
+            <div class="flex flex-wrap justify-center gap-2 mb-4">
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm sm:text-base">#아날로그전자부품</span>
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm sm:text-base">#소리합성변형</span>
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm sm:text-base">#따뜻하고풍부한음색</span>
+                <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-sm sm:text-base">#악기</span>
+            </div>
+            <p class="text-xl sm:text-2xl font-semibold text-center text-white mb-6">재미있게 탐험해 볼까요?</p>
         </div>
 
         <button id="start-exploration-button">
-            탐험 시작 ✨
+            Let's go !
         </button>
     </div>
 
