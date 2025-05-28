@@ -124,9 +124,104 @@
         .mobile-nav-overlay .nav-links .tab-button:last-child {
             border-bottom: none;
         }
+
+        /* Main Page Overlay styles */
+        #main-page-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1e3a8a; /* Dark blue background */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem; /* Default padding for all screens */
+            text-align: center;
+            z-index: 2000; /* Ensure it's on top of everything */
+            transition: opacity 0.5s ease-in-out;
+            opacity: 1;
+            visibility: visible;
+            /* Added for better mobile spacing */
+            @apply px-4 sm:px-8 md:px-16; /* More responsive horizontal padding */
+        }
+        #main-page-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none; /* Prevent interaction when hidden */
+        }
+        #main-page-overlay h2 {
+            @apply text-4xl sm:text-5xl font-extrabold mb-6 leading-tight; /* Added leading-tight for tighter heading line height */
+        }
+        /* #main-page-overlay p { -- Removed as paragraphs are now in a list --
+            @apply text-lg sm:text-xl mb-8 max-w-2xl leading-relaxed mx-auto;
+        } */
+        #main-page-overlay button {
+            @apply bg-amber-400 hover:bg-amber-500 text-sky-900 text-2xl font-bold py-4 px-10 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 mt-8; /* Adjusted mt for spacing */
+        }
+        /* Main page image styling */
+        #main-page-overlay img {
+            @apply rounded-lg shadow-lg mb-8 max-w-full h-auto;
+        }
+        /* Main page graphic element styling */
+        #main-page-overlay .graphic-element {
+            @apply text-amber-300 text-6xl sm:text-7xl mb-6;
+        }
+        /* New content box styling */
+        #main-page-overlay .content-box {
+            @apply bg-blue-800 p-6 rounded-lg shadow-xl max-w-3xl mx-auto text-white text-left; /* Added text-left for list items */
+        }
+        #main-page-overlay .content-box h3 {
+            @apply text-2xl sm:text-3xl font-bold mb-4 text-center;
+        }
+        #main-page-overlay .content-box ul {
+            @apply space-y-3 text-lg; /* Increased spacing and font size for list */
+        }
+        #main-page-overlay .content-box li {
+            @apply flex items-start;
+        }
+        #main-page-overlay .content-box li span:first-child { /* Icon styling */
+            @apply text-amber-300 mr-3 text-xl sm:text-2xl;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-amber-50 text-stone-800 overflow-x-hidden">
+    <div id="main-page-overlay">
+        <div class="graphic-element">
+            <i class="fas fa-wave-square"></i>
+        </div>
+        <h2 class="text-amber-300">아날로그 신디사이저의 세계로 오신 것을 환영합니다!</h2>
+        <img src="https://placehold.co/600x400/1e3a8a/FFFFFF?text=Vintage+Synth" alt="Vintage Synthesizer" onerror="this.onerror=null;this.src='https://placehold.co/600x400/1e3a8a/FFFFFF?text=Image+Not+Found';" class="mb-8 max-w-full h-auto rounded-lg shadow-lg">
+
+        <div class="content-box">
+            <h3>DIY 아날로그 신디사이저 프로젝트</h3>
+            <ul class="text-lg space-y-3">
+                <li class="flex items-start">
+                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
+                    <span>아날로그 신디사이저는 20세기 중반 등장한 혁신적인 악기입니다.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
+                    <span>아날로그 전자 부품으로 소리를 합성하고 변형하여 따뜻하고 풍부한 음색을 만듭니다.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
+                    <span>팝, 록, 일렉트로닉, 영화 음악 등 다양한 장르에서 사랑받아온 악기입니다.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-amber-300 mr-3 text-xl sm:text-2xl"><i class="fas fa-check-circle"></i></span>
+                    <span>이 교육 서비스에서 신디사이저의 핵심 원리와 부품들을 쉽고 재미있게 탐험하고, 직접 소리를 만들어보세요!</span>
+                </li>
+            </ul>
+        </div>
+
+        <button id="start-exploration-button">
+            탐험 시작 ✨
+        </button>
+    </div>
+
     <header class="flex-shrink-0 bg-sky-700 text-white p-6 shadow-md sticky top-0 z-50 transition-transform duration-300 ease-in-out">
         <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
             <div class="flex justify-between items-center w-full sm:w-auto">
@@ -391,7 +486,6 @@
             mobileMenuToggle.addEventListener('click', openMobileNav);
         }
         if (closeMobileMenu) {
-            // Fix: Correctly call closeMobileNav function
             closeMobileMenu.addEventListener('click', closeMobileNav);
         }
         // Close mobile nav when a link is clicked
@@ -564,6 +658,8 @@
             oscillator.connect(gainNode);
             gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
             oscillator.start();
+            console.log(`Playing tone: ${selectedWaveformType} at ${frequency.toFixed(2)} Hz. AudioContext state: ${audioContext.state}`);
+
 
             if (duration > 0) {
                 gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
@@ -580,6 +676,7 @@
                 oscillator.stop(audioContext.currentTime + 0.02);
                 oscillator.disconnect();
                 oscillator = null;
+                console.log('Tone stopped. AudioContext state:', audioContext.state);
             }
         }
 
@@ -636,7 +733,7 @@
             const originalSelectedWaveformType = selectedWaveformType; // Save current waveform type
             selectedWaveformType = 'sine'; // Force sine wave for page 1
             await playTone(audioFreq, 0); // await 추가
-            selectedWaveformType = originalSelectedWaveformType; // Restore original waveform type
+            selectedWaveformType = originalWaveformType; // Restore original waveform type
         });
 
         // 마우스/터치 이벤트 종료 시 소리 멈춤
@@ -746,14 +843,17 @@
 
 
         // 기존 window.onload 내용
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => { // Make load event async
             setupWaveCanvas();
             setupSynthCanvas();
             setupHandsPulseWidthCanvas(); // Hands section pulse width canvas setup
             showSection('sound'); // 초기 섹션 설정
 
-            // Heart 섹션의 텍스트 애니메이션은 이제 startHeartAnimations/stopHeartAnimations에서 관리
-            // 여기서는 초기 설정만 남겨둠
+            // Show the main page overlay
+            const mainPageOverlay = document.getElementById('main-page-overlay');
+            if (mainPageOverlay) {
+                mainPageOverlay.classList.remove('hidden'); // Ensure it's visible initially
+            }
         });
 
 
@@ -1258,6 +1358,19 @@
             lastScrollTop = currentScroll;
         });
 
+        // Main Page Button Logic
+        const startExplorationButton = document.getElementById('start-exploration-button');
+        const mainPageOverlay = document.getElementById('main-page-overlay');
+
+        if (startExplorationButton) {
+            startExplorationButton.addEventListener('click', async () => {
+                console.log('Start Exploration button clicked.');
+                await initAudio(); // Call initAudio on button click
+                if (mainPageOverlay) {
+                    mainPageOverlay.classList.add('hidden'); // Hide overlay after audio starts
+                }
+            });
+        }
     </script>
 </body>
 </html>
