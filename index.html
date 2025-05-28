@@ -628,9 +628,25 @@
         async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
             await initAudio(); // Ensure audio context is initialized and resumed
 
+            // Add a robust check and wait for the audio context to be truly running
+            let attempts = 0;
+            const maxAttempts = 10;
+            const delayMs = 50;
+
+            while (audioContext && audioContext.state !== 'running' && attempts < maxAttempts) {
+                console.log(`Waiting for AudioContext to be running. State: ${audioContext.state}. Attempt: ${attempts + 1}`);
+                try {
+                    await audioContext.resume();
+                } catch (e) {
+                    console.error('Error during retry resume:', e);
+                }
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+                attempts++;
+            }
+
             if (!audioContext || audioContext.state !== 'running') {
-                console.warn('AudioContext is not running. Cannot play tone.');
-                return; // Cannot play if context is not running
+                console.warn('AudioContext is still not running after multiple attempts. Cannot play tone.');
+                return;
             }
             
             // Existing oscillator stopping logic
