@@ -607,6 +607,7 @@
 
         // playTone 함수를 비동기 함수로 변경
         async function playTone(frequency, duration = 0.1, dutyCycle = 0.5) { // Add dutyCycle parameter
+            console.log('playTone called with frequency:', frequency); // Added log
             await initAudio(); // Ensure audio context is initialized and resumed
 
             // Add a robust check and wait for the audio context to be truly running
@@ -665,15 +666,22 @@
         }
 
         function stopTone() {
-            // oscillator가 존재하고, 시작된 상태인지 확인 (stop 호출 전에 start가 호출되었는지)
-            if (oscillator && audioContext && audioContext.state === 'running' && oscillator.playbackState !== 3 /* AudioBufferSourceNode.ENDED */) {
-                // 부드러운 종료를 위한 게인 조절
-                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.01);
-                // 게인 감소 후 오실레이터 중지
-                oscillator.stop(audioContext.currentTime + 0.02);
-                oscillator.disconnect();
-                oscillator = null;
-                console.log('Tone stopped. AudioContext state:', audioContext.state);
+            console.log('stopTone called.'); // Added log
+            if (oscillator) {
+                try {
+                    // 부드러운 종료를 위한 게인 조절
+                    if (gainNode && audioContext && audioContext.state === 'running') {
+                        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.01);
+                    }
+                    // 게인 감소 후 오실레이터 중지
+                    oscillator.stop(audioContext.currentTime + 0.02);
+                    oscillator.disconnect();
+                } catch (e) {
+                    console.warn('Error stopping oscillator:', e);
+                } finally { // Ensure oscillator is always nullified
+                    oscillator = null;
+                }
+                console.log('Tone stopped. AudioContext state:', audioContext ? audioContext.state : 'N/A');
             }
         }
 
