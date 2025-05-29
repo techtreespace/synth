@@ -316,6 +316,13 @@
                         <input type="range" id="potentiometerDemo" min="0" max="100" value="50" class="w-full accent-amber-500 mt-1">
                     </div>
                     <p class="mt-2">또한, 사각파의 <strong class="text-amber-600">펄스 폭(Duty Cycle)</strong>은 파형이 '켜져 있는' 시간의 비율을 의미하며, 이는 소리의 <strong class="text-amber-600">음색(Timbre)</strong>을 변화시킵니다. 555 타이머와 같은 발진 회로에서는 저항값을 조절하여 이 펄스 폭을 변경할 수 있습니다. 예를 들어, 펄스 폭이 좁아지면 날카로운 소리가, 넓어지면 더 풍부한 소리가 날 수 있습니다.</p>
+                     <div class="interactive-box mt-4">
+                        <label for="handsPulseWidthKnob" class="block text-sm font-medium text-gray-700">
+                            펄스 폭 조절 (Duty Cycle): <span id="handsPulseWidthValue" class="font-bold text-sky-600">50</span>%
+                        </label>
+                        <input type="range" id="handsPulseWidthKnob" min="10" max="90" value="50" class="w-full accent-purple-500 mt-1">
+                        <canvas id="handsPulseWidthCanvas" class="mt-2 w-full h-16 rounded bg-amber-100"></canvas>
+                    </div>
                 </div>
                 <div class="component-card">
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">택트 스위치: 소리 재생 버튼</h3>
@@ -538,7 +545,7 @@
 
             } else if (sectionId === 'hands') {
                 // setupHandsCanvases(); // Removed as canvas is removed
-                // startHandsAnimations(); // Removed as canvas animation is removed
+                startHandsAnimations(); // Added to ensure hands animation starts
                 // Ensure pulse width control is visible if it was hidden by another section
                 // const handsPulseWidthControl = document.querySelector('#hands .interactive-box .w-full.max-w-xs');
                 // if (handsPulseWidthControl) {
@@ -899,12 +906,7 @@
         window.addEventListener('load', async () => { 
             setupWaveCanvas();
             setupSynthCanvas();
-            // Removed handsPulseWidthKnob related initializations
-            // handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
-            // handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
-            // handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
-            // handsPulseWidthCtx = handsPulseWidthCanvas ? handsPulseWidthCanvas.getContext('2d') : null;
-            // setupHandsCanvases(); // Removed as canvas is removed
+            setupHandsCanvases(); // Added to ensure hands canvas is set up on load
             showSection('sound'); 
 
             const mainPageOverlay = document.getElementById('main-page-overlay');
@@ -926,8 +928,8 @@
                 selectedWaveformType = 'square'; // Force square for this section
                 if (oscillator) { 
                     if (isFinite(audioFreq)) {
-                        // Use a fixed duty cycle (e.g., 0.5 for a standard square wave)
-                        await playTone(audioFreq, 0.5); 
+                        // Use the handsCurrentPulseWidth for the duty cycle
+                        await playTone(audioFreq, handsCurrentPulseWidth / 100); 
                     } else {
                         console.error("Invalid audioFreq value from potentiometer:", audioFreq);
                         stopTone();
@@ -955,8 +957,8 @@
                 // Fix: Ensure selectedWaveformType is set to 'square' for this section
                 const originalSelectedWaveformType = selectedWaveformType; // Save original
                 selectedWaveformType = 'square'; // Force square for this section
-                // Use a fixed duty cycle (e.g., 0.5 for a standard square wave)
-                await playTone(audioFreq, 0.5); 
+                // Use the handsCurrentPulseWidth for the duty cycle
+                await playTone(audioFreq, handsCurrentPulseWidth / 100); 
                 selectedWaveformType = originalSelectedWaveformType; // Restore original
 
             } else if (!on && isTactOn && currentActiveSectionId === 'hands') { 
@@ -1160,21 +1162,21 @@
         */
 
         // Removed startHandsAnimations function
-        function startHandsAnimations() {
-            // setupHandsCanvases(); // Removed
-            // if (window.handsAnimationId === null) {
-            //     handsAnimationTime = 0; 
-            //     animateHandsWaves();
-            // }
-        }
+        // function startHandsAnimations() {
+        //     // setupHandsCanvases(); // Removed
+        //     // if (window.handsAnimationId === null) {
+        //     //     handsAnimationTime = 0; 
+        //     //     animateHandsWaves();
+        //     // }
+        // }
 
         // Removed stopHandsAnimations function
-        function stopHandsAnimations() {
-            if (window.handsAnimationId) {
-                cancelAnimationFrame(window.handsAnimationId);
-                window.handsAnimationId = null;
-            }
-        }
+        // function stopHandsAnimations() {
+        //     if (window.handsAnimationId) {
+        //         cancelAnimationFrame(window.handsAnimationId);
+        //         window.handsAnimationId = null;
+        //     }
+        // }
 
 
         const noteFrequencies = {
@@ -1419,9 +1421,8 @@
             } else if (currentActiveSectionId === 'heart') {
                 setupHeartCanvases();
             } else if (currentActiveSectionId === 'hands') {
-                // Removed handsPulseWave drawing
-                // setupHandsCanvases();
-                // drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime); 
+                setupHandsCanvases(); // Ensure setup is called on resize
+                drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime); 
             } else if (currentActiveSectionId === 'play') {
                 setupSynthCanvas();
                 const activeNoteButton = document.querySelector('.synth-button.ring-4');
@@ -1434,6 +1435,103 @@
             }
         });
 
+    
+// --- Hands Section Pulse Width Control 추가 기능 ---
+const handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
+const handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
+const handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
+const handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+let handsCurrentPulseWidth = 50;
+let handsAnimationTime = 0;
+
+function drawHandsPulseWave(dutyCycle, time) {
+    const width = handsPulseWidthCanvas.width;
+    const height = handsPulseWidthCanvas.height;
+    const amplitude = height / 3;
+    const centerY = height / 2;
+    const flowSpeed = 0.5;
+    const visualCycles = 2;
+    const totalPixelsPerCycle = width / visualCycles;
+    const onWidth = totalPixelsPerCycle * (dutyCycle / 100);
+    const offset = (time * flowSpeed * totalPixelsPerCycle / (2 * Math.PI)) % totalPixelsPerCycle;
+
+    handsPulseWidthCtx.clearRect(0, 0, width, height);
+    handsPulseWidthCtx.beginPath();
+    const initialAdjustedX = offset % totalPixelsPerCycle;
+    const initialY = (initialAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
+    handsPulseWidthCtx.moveTo(0, initialY);
+
+    for (let x = 1; x <= width; x++) {
+        const adjustedX = (x + offset) % totalPixelsPerCycle;
+        const prevAdjustedX = ((x - 1) + offset) % totalPixelsPerCycle;
+        const currentY = (adjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
+        const prevY = (prevAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
+        if (currentY !== prevY) {
+            handsPulseWidthCtx.lineTo(x, prevY);
+            handsPulseWidthCtx.lineTo(x, currentY);
+        } else {
+            handsPulseWidthCtx.lineTo(x, currentY);
+        }
+    }
+
+    handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)';
+    handsPulseWidthCtx.lineWidth = 2;
+    handsPulseWidthCtx.stroke();
+}
+
+function setupHandsCanvases() {
+    handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
+    if (handsPulseWidthCanvas) {
+        handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+        const container = handsPulseWidthCanvas.parentElement;
+        handsPulseWidthCanvas.width = container.clientWidth;
+        handsPulseWidthCanvas.height = container.clientHeight;
+        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
+    }
+}
+
+function animateHandsWaves() {
+    handsAnimationTime += 0.1;
+    if (handsPulseWidthCtx && handsPulseWidthCanvas) {
+        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
+    }
+    window.handsAnimationId = requestAnimationFrame(animateHandsWaves);
+}
+
+function startHandsAnimations() {
+    setupHandsCanvases();
+    if (window.handsAnimationId === null) {
+        handsAnimationTime = 0;
+        animateHandsWaves();
+    }
+}
+
+function stopHandsAnimations() {
+    if (window.handsAnimationId) {
+        cancelAnimationFrame(window.handsAnimationId);
+        window.handsAnimationId = null;
+    }
+}
+
+if (handsPulseWidthKnob) {
+    handsPulseWidthKnob.addEventListener('input', async (event) => {
+        handsCurrentPulseWidth = parseInt(event.target.value);
+        handsPulseWidthValue.textContent = handsCurrentPulseWidth;
+        console.log(`Hands Pulse Width Slider Input: ${handsCurrentPulseWidth}, isTactOn: ${isTactOn}, currentActiveSectionId: ${currentActiveSectionId}`);
+
+        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
+
+        if (isTactOn && currentActiveSectionId === 'hands') {
+            console.log('Tact switch is ON in Hands section. Updating audio with duty cycle:', handsCurrentPulseWidth / 100);
+            const originalSelectedWaveformType = selectedWaveformType;
+            selectedWaveformType = 'square';
+            const potVal = parseInt(potentiometerDemo.value);
+            const audioFreq = 200 + (potVal / 100) * 1000;
+            await playTone(audioFreq, handsCurrentPulseWidth / 100);
+            selectedWaveformType = originalSelectedWaveformType;
+        }
+    });
+}
     </script>
 </body>
 </html>
