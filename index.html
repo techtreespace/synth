@@ -163,7 +163,8 @@
             @apply text-6xl sm:text-7xl md:text-8xl font-extrabold mb-8 leading-tight; /* Increased font size */
         }
         #main-page-overlay button {
-            @apply bg-gray-300 hover:bg-gray-400 text-gray-800 text-2xl font-bold py-4 px-10 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 mt-8 border-2 border-gray-500; /* Adjusted mt for spacing, changed colors, added border */
+            /* Changed to white background, text color matching overlay background */
+            @apply bg-white hover:bg-gray-100 text-[#1e3a8a] text-2xl font-bold py-4 px-10 rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 mt-8 border-2 border-[#1e3a8a];
         }
         /* Main page "Let's go!" button border */
         #main-page-overlay #start-exploration-button {
@@ -345,7 +346,7 @@
                         <label for="potentiometerDemo" class="block text-sm font-medium text-gray-700">가변저항 체험: <span id="potentiometerValue" class="font-bold text-sky-600">50</span>%</label>
                         <input type="range" id="potentiometerDemo" min="0" max="100" value="50" class="w-full accent-amber-500 mt-1">
                     </div>
-                    <p class="mt-2">또한, 사각파의 <strong class="text-amber-600">펄스 폭(Duty Cycle)</strong>은 파형이 '켜져 있는' 시간의 비율을 의미하며, 이는 소리의 <strong class="text-amber-600">음색(Timbre)</strong>을 변화시킵니다. 555 타이머와 같은 발진 회로에서는 저항값을 조절하여 이 펄스 폭을 변경할 수 있습니다. 예를 들어, 펄스 폭이 좁아지면 날카로운 소리가, 넓어지면 더 풍부한 소리가 날 수 있습니다.</p>
+                    <p class="mt-2">또한, 사각파의 <strong class="text-amber-600">펄스 폭(Duty Cycle)</strong>은 파형이 '켜져 있는' 시간의 비율을 의미하며, 이는 소리의 <strong class="text-amber-600">음색(Timbre)</strong>을 변화시킵니다. 555 타이머와 같은 발진 회로에서는 저항값을 조절하여 이 펄스 폭을 변경할 수 있습니다.</p>
                      <div class="interactive-box mt-4">
                         <label for="handsPulseWidthKnob" class="block text-sm font-medium text-gray-700">
                             펄스 폭 조절 (Duty Cycle): <span id="handsPulseWidthValue" class="font-bold text-sky-600">50</span>%
@@ -1464,12 +1465,18 @@
 // --- Hands Section Pulse Width Control 추가 기능 ---
 const handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
 const handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
-const handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
-const handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
+let handsPulseWidthCanvas; // Changed from const to let
+let handsPulseWidthCtx;    // Changed from const to let
 let handsCurrentPulseWidth = 50;
 let handsAnimationTime = 0;
 
 function drawHandsPulseWave(dutyCycle, time) {
+    // Check if handsPulseWidthCtx and handsPulseWidthCanvas are initialized
+    if (!handsPulseWidthCtx || !handsPulseWidthCanvas) {
+        console.warn('handsPulseWidthCanvas or handsPulseWidthCtx is not initialized in drawHandsPulseWave.');
+        return;
+    }
+
     const width = handsPulseWidthCanvas.width;
     const height = handsPulseWidthCanvas.height;
     const amplitude = height / 3;
