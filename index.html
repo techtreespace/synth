@@ -188,6 +188,69 @@
         #main-page-overlay .content-box li span:first-child { /* This was for icon styling - can be removed or repurposed */
             @apply text-amber-300 mr-3 text-xl sm:text-2xl;
         }
+        /* 슬라이드 컨테이너 스타일 */
+        .slide-container {
+            position: relative;
+            width: 100%;
+            height: 500px; /* 슬라이드 높이 고정 */
+            overflow: hidden;
+            margin-top: 2rem;
+            border-radius: 0.5rem;
+            background-color: #f0f0f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            /* flexbox를 사용하여 iframe을 중앙에 정렬하고, 필요한 경우만 스크롤바 표시 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto; /* 내용이 넘칠 경우 스크롤 허용 */
+        }
+
+        /* 각 슬라이드 페이지 스타일 - 이제 사용되지 않음 */
+        /*
+        .slide-page {
+            min-width: 100%;
+            transition: transform 0.5s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            font-size: 1.1rem;
+            color: #333;
+            background-color: #fff;
+        }
+        .slide-page img {
+            max-width: 90%;
+            max-height: 80%;
+            object-fit: contain;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+        */
+
+        /* 슬라이드 네비게이션 버튼 및 인디케이터는 이제 사용되지 않음 */
+        /*
+        .slide-nav-button {
+            @apply absolute top-1/2 -translate-y-1/2 px-4 py-2 bg-sky-600 text-white rounded-full shadow-lg hover:bg-sky-700 transition-colors z-10;
+        }
+        .slide-nav-button.left {
+            left: 1rem;
+        }
+        .slide-nav-button.right {
+            right: 1rem;
+        }
+        .slide-indicators {
+            @apply flex justify-center mt-4 space-x-2;
+        }
+        .slide-indicator-dot {
+            @apply w-3 h-3 bg-gray-300 rounded-full cursor-pointer;
+        }
+        .slide-indicator-dot.active {
+            @apply bg-sky-600;
+        }
+        */
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-amber-50 text-stone-800 overflow-x-hidden">
@@ -357,7 +420,7 @@
                 </div>
                 <div class="component-card">
                     <h3 class="text-xl font-semibold text-emerald-700 mb-2">택트 스위치: 소리 재생 버튼</h3>
-                    <p>택트 스위치는 누르면 회로가 연결되어 소리가 나고, 손을 떼면 회로가 끊어져 소리가 멈추는 <strong class="text-amber-600">버튼</strong>이에요. 전등 스위치처럼 전기의 길을 열었다 닫았다 하며 신디사이저 소리를 제어합니다.</p>
+                    <p>택트 스위치는 누르면 회로가 연결되어 소리가 나고, 손을 떼면 회로가 멈추는 <strong class="text-amber-600">버튼</strong>이에요. 전등 스위치처럼 전기의 길을 열었다 닫았다 하며 신디사이저 소리를 제어합니다.</p>
                     <div class="interactive-box mt-2">
                         <button id="tactSwitchDemo" class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded transition-colors">
                             스위치 누르기!
@@ -462,6 +525,27 @@
                         <li><strong>안전 제일:</strong> 전자 부품을 다룰 때는 항상 안전 수칙을 지켜주세요.</li>
                     </ul>
                 </div>
+
+                <!-- 슬라이드 섹션 시작: Canva 슬라이드 임베드 -->
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-4">전자회로 구성 학습 슬라이드</h3>
+                    <div class="slide-container">
+                        <!-- Canva 슬라이드를 임베드합니다. Canva embed 파라미터를 추가했습니다. -->
+                        <iframe src="https://www.canva.com/design/DAGqPNWGerM/PETWQ8fUuKBvXzF0B287xw/view?embed"
+                                width="100%"
+                                height="100%"
+                                allowfullscreen
+                                allow="fullscreen"
+                                style="border: none; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        </iframe>
+                    </div>
+                    <p class="mt-4 text-center text-sm text-gray-600">
+                        위 슬라이드는 Canva에서 제공하는 임베드 기능을 사용하여 표시됩니다.
+                        슬라이드 내에서 제공되는 컨트롤을 사용하여 탐색해주세요.
+                    </p>
+                </div>
+                <!-- 슬라이드 섹션 끝 -->
+
                 <p class="mt-4 text-center font-semibold">여러분의 창의력과 호기심으로 더 멋진 소리와 장치들을 만들어보세요! 🚀</p>
             </div>
         </div>
@@ -583,7 +667,12 @@
                 startHeartAnimations();
                 stopHandsAnimations(); 
 
-            } else { // For summary or other sections, stop all animations
+            } else if (sectionId === 'summary') { 
+                // summary 섹션 진입 시, 더 이상 custom slide setup을 호출할 필요가 없습니다.
+                // Canva iframe이 이미 HTML에 있으므로 단순히 섹션을 표시하기만 하면 됩니다.
+                stopHandsAnimations();
+                stopHeartAnimations();
+            } else { // For other sections, stop all animations
                 stopHandsAnimations();
                 stopHeartAnimations();
             }
@@ -933,6 +1022,7 @@
             setupWaveCanvas();
             setupSynthCanvas();
             setupHandsCanvases(); // Added to ensure hands canvas is set up on load
+            // setupSlides(); // 슬라이드 초기화 호출은 이제 필요 없습니다 (Canva iframe 직접 임베드).
             showSection('sound'); 
 
             const mainPageOverlay = document.getElementById('main-page-overlay');
@@ -1045,14 +1135,6 @@
         const pulseWidthKnob = document.getElementById('pulseWidthKnob');
         const pulseWidthValue = document.getElementById('pulseWidthValue');
         let currentPulseWidth = 50; 
-
-        // Removed handsPulseWidth related variables
-        // let handsPulseWidthKnob; 
-        // let handsPulseWidthValue; 
-        // let handsPulseWidthCanvas; 
-        // let handsPulseWidthCtx; 
-        // let handsCurrentPulseWidth = 50; 
-        // let handsAnimationTime = 0; 
         
         function drawSynthWave(frequency, type, dutyCycle = 50) {
             if (!synthCtx || !synthOutputCanvas) return; 
@@ -1117,94 +1199,108 @@
                 drawSynthWave(0, selectedWaveformType, currentPulseWidth); 
             }
         }
+    
+        const handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
+        const handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
+        let handsPulseWidthCanvas; 
+        let handsPulseWidthCtx;    
+        let handsCurrentPulseWidth = 50;
+        let handsAnimationTime = 0;
 
-        // Removed drawHandsPulseWave function
-        /*
         function drawHandsPulseWave(dutyCycle, time) {
-            if (!handsPulseWidthCtx || !handsPulseWidthCanvas) return;
+            if (!handsPulseWidthCtx || !handsPulseWidthCanvas) {
+                console.warn('handsPulseWidthCanvas or handsPulseWidthCtx is not initialized in drawHandsPulseWave.');
+                return;
+            }
 
             const width = handsPulseWidthCanvas.width;
             const height = handsPulseWidthCanvas.height;
             const amplitude = height / 3;
             const centerY = height / 2;
-            const flowSpeed = 0.5; 
-            
+            const flowSpeed = 0.5;
+            const visualCycles = 2;
+            const totalPixelsPerCycle = width / visualCycles;
+            const onWidth = totalPixelsPerCycle * (dutyCycle / 100);
+            const offset = (time * flowSpeed * totalPixelsPerCycle / (2 * Math.PI)) % totalPixelsPerCycle;
+
             handsPulseWidthCtx.clearRect(0, 0, width, height);
             handsPulseWidthCtx.beginPath();
-            
-            const visualCycles = 2; 
-            const totalPixelsPerCycle = width / visualCycles; 
-            const onWidth = totalPixelsPerCycle * (dutyCycle / 100); 
-
-            const offset = (time * flowSpeed * totalPixelsPerCycle / (2 * Math.PI)) % totalPixelsPerCycle; 
-
-            let initialAdjustedX = offset % totalPixelsPerCycle;
-            let initialY = (initialAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
-            handsPulseWidthCtx.moveTo(0, initialY); 
+            const initialAdjustedX = offset % totalPixelsPerCycle;
+            const initialY = (initialAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
+            handsPulseWidthCtx.moveTo(0, initialY);
 
             for (let x = 1; x <= width; x++) {
                 const adjustedX = (x + offset) % totalPixelsPerCycle;
                 const prevAdjustedX = ((x - 1) + offset) % totalPixelsPerCycle;
-
                 const currentY = (adjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
                 const prevY = (prevAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
-
                 if (currentY !== prevY) {
-                    handsPulseWidthCtx.lineTo(x, prevY); 
-                    handsPulseWidthCtx.lineTo(x, currentY); 
+                    handsPulseWidthCtx.lineTo(x, prevY);
+                    handsPulseWidthCtx.lineTo(x, currentY);
                 } else {
                     handsPulseWidthCtx.lineTo(x, currentY);
                 }
             }
-            handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)'; 
+
+            handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)';
             handsPulseWidthCtx.lineWidth = 2;
             handsPulseWidthCtx.stroke();
         }
-        */
 
-        // Removed setupHandsCanvases function
-        /*
-        function setupHandsCanvases() { 
+        function setupHandsCanvases() {
             handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
             if (handsPulseWidthCanvas) {
                 handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
                 const container = handsPulseWidthCanvas.parentElement;
                 handsPulseWidthCanvas.width = container.clientWidth;
                 handsPulseWidthCanvas.height = container.clientHeight;
-                drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime); 
+                drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
             }
         }
-        */
 
-        // Removed animateHandsWaves function
-        /*
         function animateHandsWaves() {
-            handsAnimationTime += 0.1; 
+            handsAnimationTime += 0.1;
             if (handsPulseWidthCtx && handsPulseWidthCanvas) {
                 drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
             }
             window.handsAnimationId = requestAnimationFrame(animateHandsWaves);
         }
-        */
 
-        // Removed startHandsAnimations function
-        // function startHandsAnimations() {
-        //     // setupHandsCanvases(); // Removed
-        //     // if (window.handsAnimationId === null) {
-        //     //     handsAnimationTime = 0; 
-        //     //     animateHandsWaves();
-        //     // }
-        // }
+        function startHandsAnimations() {
+            setupHandsCanvases();
+            if (window.handsAnimationId === null) {
+                handsAnimationTime = 0;
+                animateHandsWaves();
+            }
+        }
 
-        // Removed stopHandsAnimations function
-        // function stopHandsAnimations() {
-        //     if (window.handsAnimationId) {
-        //         cancelAnimationFrame(window.handsAnimationId);
-        //         window.handsAnimationId = null;
-        //     }
-        // }
+        function stopHandsAnimations() {
+            if (window.handsAnimationId) {
+                cancelAnimationFrame(window.handsAnimationId);
+                window.handsAnimationId = null;
+            }
+        }
 
+        if (handsPulseWidthKnob) {
+            handsPulseWidthKnob.addEventListener('input', async (event) => {
+                handsCurrentPulseWidth = parseInt(event.target.value);
+                handsPulseWidthValue.textContent = handsCurrentPulseWidth;
+                console.log(`Hands Pulse Width Slider Input: ${handsCurrentPulseWidth}, isTactOn: ${isTactOn}, currentActiveSectionId: ${currentActiveSectionId}`);
 
+                drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
+
+                if (isTactOn && currentActiveSectionId === 'hands') {
+                    console.log('Tact switch is ON in Hands section. Updating audio with duty cycle:', handsCurrentPulseWidth / 100);
+                    const originalSelectedWaveformType = selectedWaveformType;
+                    selectedWaveformType = 'square';
+                    const potVal = parseInt(potentiometerDemo.value);
+                    const audioFreq = 200 + (potVal / 100) * 1000;
+                    await playTone(audioFreq, handsCurrentPulseWidth / 100);
+                    selectedWaveformType = originalSelectedWaveformType;
+                }
+            });
+        }
+        
         const noteFrequencies = {
             'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77,
             'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88
@@ -1292,30 +1388,6 @@
                 }
             }
         });
-
-        // Removed handsPulseWidthKnob event listener
-        /*
-        if (handsPulseWidthKnob) {
-            handsPulseWidthKnob.addEventListener('input', async (event) => { 
-                handsCurrentPulseWidth = parseInt(event.target.value);
-                handsPulseWidthValue.textContent = handsCurrentPulseWidth;
-                console.log(`Hands Pulse Width Slider Input: ${handsCurrentPulseWidth}, isTactOn: ${isTactOn}, currentActiveSectionId: ${currentActiveSectionId}`); 
-
-                drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime); 
-
-                if (isTactOn && currentActiveSectionId === 'hands') {
-                    console.log('Tact switch is ON in Hands section. Updating audio with duty cycle:', handsCurrentPulseWidth / 100); 
-                    // Fix: Ensure selectedWaveformType is set to 'square' for this section
-                    const originalSelectedWaveformType = selectedWaveformType; // Save original
-                    selectedWaveformType = 'square'; // Force square for this section
-                    const potVal = parseInt(potentiometerDemo.value);
-                    const audioFreq = 200 + (potVal / 100) * 1000;
-                    await playTone(audioFreq, handsCurrentPulseWidth / 100); 
-                    selectedWaveformType = originalSelectedWaveformType; // Restore original
-                }
-            });
-        }
-        */
 
         const noteHueMap = { 'C': 0, 'D': 30, 'E': 60, 'F': 120, 'G': 240, 'A': 270, 'B': 300 };
         const octaveLightness = { '5': 80, '4': 60 };
@@ -1422,14 +1494,6 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Removed handsPulseWidth related initializations
-            // handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
-            // handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
-            // handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
-            // if (handsPulseWidthCanvas) {
-            //     handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
-            // }
-
             const sineRadioPlay = document.querySelector('#play input[name="waveformType"][value="sine"]');
             const pulseWidthControlUI = document.getElementById('pulseWidthControl');
             if (sineRadioPlay && sineRadioPlay.checked) { // play 섹션의 사인파가 기본 체크되어 있다면
@@ -1458,112 +1522,42 @@
                     freqToDraw = currentPlayingBaseFreq * (0.5 + (pitch / 100) * 1.5);
                 }
                 drawSynthWave(freqToDraw, selectedWaveformType, currentPulseWidth);
-            }
+            } 
+            // 'summary' 섹션에 대한 resize 핸들링은 iframe이 자체적으로 반응형을 처리하므로 제거
         });
 
-    
-// --- Hands Section Pulse Width Control 추가 기능 ---
-const handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
-const handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
-let handsPulseWidthCanvas; // Changed from const to let
-let handsPulseWidthCtx;    // Changed from const to let
-let handsCurrentPulseWidth = 50;
-let handsAnimationTime = 0;
+    // --- 기존 슬라이드 기능 관련 JavaScript 제거 또는 주석 처리 ---
+    // 기존 슬라이드 기능 관련 변수들은 사용되지 않으므로 제거합니다.
+    // let currentSlide = 0;
+    // const slidesContainer = document.getElementById('circuit-slides');
+    // const slidePages = slidesContainer ? slidesContainer.querySelectorAll('.slide-page') : [];
+    // const totalSlides = slidePages.length;
+    // const prevButton = document.getElementById('prevSlide');
+    // const nextButton = document.getElementById('nextSlide');
+    // const slideIndicatorsContainer = document.getElementById('slideIndicators');
 
-function drawHandsPulseWave(dutyCycle, time) {
-    // Check if handsPulseWidthCtx and handsPulseWidthCanvas are initialized
-    if (!handsPulseWidthCtx || !handsPulseWidthCanvas) {
-        console.warn('handsPulseWidthCanvas or handsPulseWidthCtx is not initialized in drawHandsPulseWave.');
-        return;
-    }
+    // // 기존 슬라이드 제어 함수들은 사용되지 않으므로 제거합니다.
+    // function showSlide(index) { /* ... */ }
+    // function nextSlide() { /* ... */ }
+    // function prevSlide() { /* ... */ }
+    // function createIndicators() { /* ... */ }
+    // function updateIndicators() { /* ... */ }
 
-    const width = handsPulseWidthCanvas.width;
-    const height = handsPulseWidthCanvas.height;
-    const amplitude = height / 3;
-    const centerY = height / 2;
-    const flowSpeed = 0.5;
-    const visualCycles = 2;
-    const totalPixelsPerCycle = width / visualCycles;
-    const onWidth = totalPixelsPerCycle * (dutyCycle / 100);
-    const offset = (time * flowSpeed * totalPixelsPerCycle / (2 * Math.PI)) % totalPixelsPerCycle;
+    // setupSlides 함수는 이제 필요 없으므로 제거합니다.
+    // function setupSlides() {
+    //     if (slidesContainer) {
+    //         showSlide(currentSlide);
+    //         createIndicators();
+    //     }
+    // }
 
-    handsPulseWidthCtx.clearRect(0, 0, width, height);
-    handsPulseWidthCtx.beginPath();
-    const initialAdjustedX = offset % totalPixelsPerCycle;
-    const initialY = (initialAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
-    handsPulseWidthCtx.moveTo(0, initialY);
+    // 슬라이드 네비게이션 버튼 이벤트 리스너도 제거합니다.
+    // if (prevButton) { prevButton.addEventListener('click', prevSlide); }
+    // if (nextButton) { nextButton.addEventListener('click', nextSlide); }
 
-    for (let x = 1; x <= width; x++) {
-        const adjustedX = (x + offset) % totalPixelsPerCycle;
-        const prevAdjustedX = ((x - 1) + offset) % totalPixelsPerCycle;
-        const currentY = (adjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
-        const prevY = (prevAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
-        if (currentY !== prevY) {
-            handsPulseWidthCtx.lineTo(x, prevY);
-            handsPulseWidthCtx.lineTo(x, currentY);
-        } else {
-            handsPulseWidthCtx.lineTo(x, currentY);
-        }
-    }
+    // DOMContentLoaded에서 setupSlides 호출도 제거합니다.
+    // document.addEventListener('DOMContentLoaded', setupSlides);
 
-    handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)';
-    handsPulseWidthCtx.lineWidth = 2;
-    handsPulseWidthCtx.stroke();
-}
-
-function setupHandsCanvases() {
-    handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
-    if (handsPulseWidthCanvas) {
-        handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
-        const container = handsPulseWidthCanvas.parentElement;
-        handsPulseWidthCanvas.width = container.clientWidth;
-        handsPulseWidthCanvas.height = container.clientHeight;
-        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
-    }
-}
-
-function animateHandsWaves() {
-    handsAnimationTime += 0.1;
-    if (handsPulseWidthCtx && handsPulseWidthCanvas) {
-        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
-    }
-    window.handsAnimationId = requestAnimationFrame(animateHandsWaves);
-}
-
-function startHandsAnimations() {
-    setupHandsCanvases();
-    if (window.handsAnimationId === null) {
-        handsAnimationTime = 0;
-        animateHandsWaves();
-    }
-}
-
-function stopHandsAnimations() {
-    if (window.handsAnimationId) {
-        cancelAnimationFrame(window.handsAnimationId);
-        window.handsAnimationId = null;
-    }
-}
-
-if (handsPulseWidthKnob) {
-    handsPulseWidthKnob.addEventListener('input', async (event) => {
-        handsCurrentPulseWidth = parseInt(event.target.value);
-        handsPulseWidthValue.textContent = handsCurrentPulseWidth;
-        console.log(`Hands Pulse Width Slider Input: ${handsCurrentPulseWidth}, isTactOn: ${isTactOn}, currentActiveSectionId: ${currentActiveSectionId}`);
-
-        drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
-
-        if (isTactOn && currentActiveSectionId === 'hands') {
-            console.log('Tact switch is ON in Hands section. Updating audio with duty cycle:', handsCurrentPulseWidth / 100);
-            const originalSelectedWaveformType = selectedWaveformType;
-            selectedWaveformType = 'square';
-            const potVal = parseInt(potentiometerDemo.value);
-            const audioFreq = 200 + (potVal / 100) * 1000;
-            await playTone(audioFreq, handsCurrentPulseWidth / 100);
-            selectedWaveformType = originalSelectedWaveformType;
-        }
-    });
-}
     </script>
 </body>
 </html>
