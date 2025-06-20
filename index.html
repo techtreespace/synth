@@ -473,7 +473,7 @@
                         </div>
                     </div>
                     
-                    <p id="synthOutputStatus" class="mt-2 text-center font-semibold text-stone-700 h-6"></p>
+                    <p id="synthOutputStatus" class="mt-2 text-center font-semibold text-stone-700 h-6">버튼을 눌러 연주해보세요!</p>
 
                     <div class="flex flex-col gap-4 w-full items-center">
                         <div class="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8">
@@ -528,21 +528,21 @@
 
                 <!-- 슬라이드 섹션 시작: Canva 슬라이드 임베드 -->
                 <div class="component-card">
-                    <h3 class="text-xl font-semibold text-emerald-700 mb-4">전자회로 구성 학습 슬라이드</h3>
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-4">사운드토이 큐브 01 학습 슬라이드</h3>
                     <div class="slide-container">
                         <!-- Canva 슬라이드를 임베드합니다. Canva embed 파라미터를 추가했습니다. -->
-                        <iframe src="https://www.canva.com/design/DAGqPNWGerM/PETWQ8fUuKBvXzF0B287xw/view?embed"
-                                width="100%"
-                                height="100%"
-                                allowfullscreen
-                                allow="fullscreen"
-                                style="border: none; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        <iframe src="https://www.canva.com/design/DAGqPNWGerM/PETWQ8fUuKBvXzF0B287xw/view?embed" width="100%" height="100%" allowfullscreen allow="fullscreen" style="border: none; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"> </iframe>
+                    </div>
+                    <p class="mt-4 text-center text-sm text-gray-600"> 위 슬라이드는 Canva에서 제공하는 임베드 기능을 사용하여 표시됩니다. 슬라이드 내에서 제공되는 컨트롤을 사용하여 탐색해주세요. </p>
+                </div>
+                <!-- Add the new slide here -->
+                <div class="component-card">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-4">사운드토이 큐브 02 학습 슬라이드</h3>
+                    <div class="slide-container">
+                        <iframe src="https://www.canva.com/design/DAGq2EFp4Bc/k5TPzkbMl7ZkRp8lxEVGRw/view?embed" width="100%" height="100%" allowfullscreen allow="fullscreen" style="border: none; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
                         </iframe>
                     </div>
-                    <p class="mt-4 text-center text-sm text-gray-600">
-                        위 슬라이드는 Canva에서 제공하는 임베드 기능을 사용하여 표시됩니다.
-                        슬라이드 내에서 제공되는 컨트롤을 사용하여 탐색해주세요.
-                    </p>
+                    <p class="mt-4 text-center text-sm text-gray-600"> 위 슬라이드는 Canva에서 제공하는 임베드 기능을 사용하여 표시됩니다. 슬라이드 내에서 제공되는 컨트롤을 사용하여 탐색해주세요. </p>
                 </div>
                 <!-- 슬라이드 섹션 끝 -->
 
@@ -556,14 +556,23 @@
     </footer>
 
     <script>
+        // 전역 변수 선언 및 초기화
+        let audioContext;
+        let oscillator; // 현재 재생 중인 오실레이터 (play/sound 섹션에서 사용)
+        let gainNode;
+        let isOscillatorRunning = false; // 오실레이터가 현재 재생 중인지 여부를 나타내는 플래그
+        let tactSwitchAnimationFrameId = null; // 택트 스위치 애니메이션 프레임 ID (Hands 섹션에서만 사용)
+        let selectedWaveformType = 'sine'; // 선택된 파형 타입을 저장하는 전역 변수 (Play 섹션에서 사용)
+        let currentPulseWidth = 50; // 기본 듀티 사이클 (Play 섹션에서 사용)
+
         const sections = ['sound', 'heart', 'hands', 'play', 'summary'];
         const tabButtons = document.querySelectorAll('.tab-button');
         const contentSections = document.querySelectorAll('.content-section');
         let currentActiveSectionId = 'sound'; // 현재 활성화된 섹션 ID를 추적하는 변수
 
         // 애니메이션 프레임 ID를 저장하여 중지할 수 있도록 합니다.
-        window.timerAnimationId = null; 
-        window.schmittAnimationId = null; 
+        window.timerAnimationId = null;
+        window.schmittAnimationId = null;
         window.handsAnimationId = null; // Hands 섹션 애니메이션 ID 추가
 
         // Mobile Navigation Elements
@@ -572,72 +581,64 @@
         const closeMobileMenu = document.getElementById('close-mobile-menu');
         const mobileNavLinks = document.querySelector('#mobile-nav-overlay .nav-links');
 
-        function openMobileNav() {
+        mobileMenuToggle.addEventListener('click', () => {
             mobileNavOverlay.classList.add('open');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling background
-        }
+        });
 
-        function closeMobileNav() {
+        closeMobileMenu.addEventListener('click', () => {
             mobileNavOverlay.classList.remove('open');
-            document.body.style.overflow = ''; // Restore scrolling
-        }
+        });
 
-        // Event Listeners for Mobile Menu
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', openMobileNav);
-        }
-        if (closeMobileMenu) {
-            closeMobileMenu.addEventListener('click', closeMobileNav); 
-        }
-        // Close mobile nav when a link is clicked
-        if (mobileNavLinks) {
-            mobileNavLinks.querySelectorAll('.tab-button').forEach(button => {
-                button.addEventListener('click', closeMobileNav); 
-            });
-        }
+        mobileNavLinks.addEventListener('click', (event) => {
+            // 이벤트 위임을 사용하여 탭 버튼 클릭 처리
+            if (event.target.classList.contains('tab-button')) {
+                // 클릭된 버튼의 섹션 ID를 가져와서 showSection 함수 호출
+                const sectionId = event.target.onclick.toString().match(/showSection\('([^']+)'\)/)[1];
+                showSection(sectionId);
+                mobileNavOverlay.classList.remove('open'); // 메뉴 닫기
+            }
+        });
 
 
         function showSection(sectionId) {
-            // 모든 섹션 숨기기
+            // 이전 활성 탭 버튼의 'active' 클래스 제거
+            const prevActiveButton = document.querySelector(`.tab-button.active`);
+            if (prevActiveButton) {
+                prevActiveButton.classList.remove('active');
+            }
+
+            // 모든 content-section 숨기기
             contentSections.forEach(section => {
                 section.classList.add('hidden');
             });
-            // 선택된 섹션 보이기
-            document.getElementById(sectionId).classList.remove('hidden');
 
-            // 탭 버튼 활성화 상태 업데이트 (데스크톱 메뉴)
-            document.querySelector('header nav').querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-                if (button.getAttribute('onclick').includes(sectionId)) {
+            // 선택된 content-section 보여주기
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // 현재 활성 탭 버튼에 'active' 클래스 추가 (데스크톱 및 모바일 메뉴 모두 적용)
+            tabButtons.forEach(button => {
+                if (button.onclick.toString().includes(`showSection('${sectionId}')`)) {
                     button.classList.add('active');
                 }
             });
 
-            // 탭 버튼 활성화 상태 업데이트 (모바일 오버레이 메뉴)
-            document.querySelector('#mobile-nav-overlay .nav-links').querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-                if (button.getAttribute('onclick').includes(sectionId)) {
-                    button.classList.add('active');
-                }
-            });
+            currentActiveSectionId = sectionId; // 현재 활성화된 섹션 ID 업데이트
+            console.log(`Switched to section: ${sectionId}`);
 
-            currentActiveSectionId = sectionId; // 현재 활성화된 섹션 업데이트
-            window.scrollTo(0, 0); // 스크롤 맨 위로
+            // 섹션별 애니메이션 및 상태 관리
+            // 모든 섹션 전환 시 현재 재생 중인 소리를 멈춥니다.
+            stopTone();
+            stopHandsAnimations();
+            stopHeartAnimations();
 
-            // 섹션에 따라 캔버스 초기화 또는 애니메이션 시작/중지
+
             if (sectionId === 'sound') {
-                setupWaveCanvas();
-                // 'sound' 섹션 진입 시 파형을 사인파로 설정하고 라디오 버튼도 업데이트
-                selectedWaveformType = 'sine';
-                const sineRadio = document.querySelector('input[name="waveformType"][value="sine"]');
-                if (sineRadio) {
-                    sineRadio.checked = true;
-                }
-                // 사인파가 아니면 펄스 폭 조절 슬라이더를 숨길 필요는 없음 (play 섹션에서 관리)
-                // 그러나 sound 섹션에서는 play 섹션의 UI를 건드리지 않음.
-                stopHandsAnimations();
-                stopHeartAnimations();
-
+                setupWaveCanvas(); // 캔버스 크기 재설정 및 컨텍스트 다시 가져오기
+                drawWave(parseInt(frequencySlider.value)); // 현재 슬라이더 값으로 파형 다시 그리기
+                selectedWaveformType = 'sine'; // 사운드 섹션은 항상 사인파
             } else if (sectionId === 'play') {
                 setupSynthCanvas();
                 // 'play' 섹션으로 이동 시, 파형 타입을 UI의 기본 선택(sine)으로 맞춤
@@ -647,34 +648,24 @@
                 }
                 selectedWaveformType = 'sine'; // 실제 오디오 파형 타입도 사인으로 설정
                 console.log("Entered 'play' section, selectedWaveformType set to 'sine'");
-
                 // 현재 선택된 파형(이제 'sine'이어야 함)에 따라 펄스 폭 조절 UI 표시/숨김
                 const pulseWidthControlUI = document.getElementById('pulseWidthControl'); // 변수명 명확화
-                if (selectedWaveformType === 'square') { // 이 조건은 sine으로 설정했으므로 false
+                if (selectedWaveformType === 'square') { // 초기값 'sine'이므로 hidden
                     pulseWidthControlUI.classList.remove('hidden');
                 } else {
                     pulseWidthControlUI.classList.add('hidden');
                 }
-                stopHandsAnimations(); 
-                stopHeartAnimations(); 
-
             } else if (sectionId === 'hands') {
                 setupHandsCanvases(); // Added to ensure hands canvas is set up when section is shown
-                startHandsAnimations(); 
-                stopHeartAnimations(); 
-
+                startHandsAnimations();
+                // hands 섹션에서 사용할 `selectedWaveformType`을 'square'로 고정
+                // 이 변수는 playTone 함수에서 사용되므로 여기서 설정
+                selectedWaveformType = 'square';
             } else if (sectionId === 'heart') {
                 startHeartAnimations();
-                stopHandsAnimations(); 
-
-            } else if (sectionId === 'summary') { 
+            } else if (sectionId === 'summary') {
                 // summary 섹션 진입 시, 더 이상 custom slide setup을 호출할 필요가 없습니다.
                 // Canva iframe이 이미 HTML에 있으므로 단순히 섹션을 표시하기만 하면 됩니다.
-                stopHandsAnimations();
-                stopHeartAnimations();
-            } else { // For other sections, stop all animations
-                stopHandsAnimations();
-                stopHeartAnimations();
             }
         }
 
@@ -685,32 +676,28 @@
             startExplorationButton.addEventListener('click', () => {
                 mainPageOverlay.classList.add('hidden');
                 // Ensure audio context is initialized when user interacts for the first time
-                initAudio(); 
+                initAudio();
             });
         }
-
-        let audioContext = null; // Initialize to null
-        let oscillator = null; // Changed to null for persistent management
-        let gainNode = null; // Changed to null for persistent management
-        let currentPlayingBaseFreq = 0; // 섹션 4에서 현재 재생 중인 음의 기본 주파수를 저장
-
-        // initAudio 함수를 비동기 함수로 변경
-        async function initAudio() {
-            console.log('initAudio called. Current AudioContext state:', audioContext ? audioContext.state : 'null');
-            if (!audioContext) { // Only create context if it doesn't exist
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                gainNode = audioContext.createGain();
-                gainNode.connect(audioContext.destination);
-                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                console.log('AudioContext created. Initial state:', audioContext.state);
-            }
-
-            // Attempt to resume if suspended or interrupted
-            if (audioContext.state === 'suspended' || audioContext.state === 'interrupted') {
-                console.log('Attempting to resume AudioContext from state:', audioContext.state);
+        
+        function initAudio() {
+            if (!audioContext) {
                 try {
-                    await audioContext.resume();
-                    console.log('AudioContext resumed successfully. New state:', audioContext.state);
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('AudioContext initialized.');
+                    gainNode = audioContext.createGain(); // 게인 노드 생성
+                    gainNode.connect(audioContext.destination); // 게인 노드를 목적지에 연결
+                } catch (e) {
+                    console.error('Web Audio API not supported in this browser:', e);
+                    alert('죄송합니다. 이 브라우저에서는 웹 오디오 API가 지원되지 않아 신디사이저 기능을 사용할 수 없습니다.');
+                    return;
+                }
+            }
+            // Ensure audio context is running, especially on iOS/Safari
+            if (audioContext.state === 'suspended') {
+                console.log('Attempting to resume AudioContext...');
+                audioContext.resume().then(() => {
+                    console.log('AudioContext resumed successfully.');
                     // Play a very short, silent tone to keep AudioContext active on mobile
                     if (audioContext.state === 'running') {
                         const silentOscillator = audioContext.createOscillator();
@@ -722,17 +709,14 @@
                         silentOscillator.stop(audioContext.currentTime + 0.001); // Very short duration
                         console.log('Played silent tone to keep AudioContext active.');
                     }
-                } catch (e) {
+                }).catch(e => {
                     console.error('Failed to resume AudioContext:', e);
-                }
+                });
             } else if (audioContext.state === 'running') {
                 console.log('AudioContext state is already active:', audioContext.state);
             }
             console.log('initAudio finished. Final AudioContext state:', audioContext.state);
         }
-
-        // 선택된 파형 타입을 저장하는 전역 변수
-        let selectedWaveformType = 'sine'; // 기본값은 사인파
 
         // Helper function to create a PeriodicWave for a square wave with variable duty cycle
         function createSquarePeriodicWave(audioContext, dutyCycle) {
@@ -751,141 +735,112 @@
             return audioContext.createPeriodicWave(real, imag, { disableNormalization: true });
         }
 
-        // playTone 함수 (수정됨)
+        /**
+         * 지정된 주파수, 파형 타입, 듀티 사이클로 톤을 시작하거나 업데이트합니다.
+         * 이미 오실레이터가 재생 중이고 파형 타입이 동일하면 주파수와 듀티 사이클만 업데이트합니다.
+         * 파형 타입이 변경되거나 오실레이터가 없는 경우 새 오실레이터를 생성합니다.
+         * @param {number} frequency - 톤의 주파수 (Hz).
+         * @param {number} dutyCycle - 사각파의 듀티 사이클 (0.01 ~ 0.99).
+         * @param {string} waveformType - 'sine', 'square', 'sawtooth', 'triangle' 중 하나.
+         */
         async function playTone(frequency, dutyCycle = 0.5) {
-            console.log(`playTone: freq=${frequency}, waveform=${selectedWaveformType}, dutyCycle=${dutyCycle}, currentOscillatorType=${oscillator ? oscillator.type : 'null'}`);
-            await initAudio();
+            console.log(`playTone called: freq=${frequency}, waveform=${selectedWaveformType}, dutyCycle=${dutyCycle}`);
+            await initAudio(); // 오디오 컨텍스트가 초기화되었는지 확인
 
             if (!audioContext || audioContext.state !== 'running') {
                 console.warn('AudioContext is not running. Cannot play tone.');
                 return;
             }
 
-            let recreateOscillator = false;
-            if (!oscillator) {
-                recreateOscillator = true;
-            } else {
-                // 요청된 파형과 현재 오실레이터의 상태를 비교하여 재생성 여부 결정
-                if (selectedWaveformType === 'square') {
-                    // square(PeriodicWave)를 사용하려는데, 현재 오실레이터가 custom 타입이 아니면 재생성
-                    if (oscillator.type !== 'custom') {
-                        recreateOscillator = true;
-                        console.log('Recreating oscillator: current type is not custom, but square (PeriodicWave) is requested.');
-                    }
-                    // 이미 custom 타입이면 (즉, PeriodicWave 사용 중), dutyCycle 변경을 위해 재생성할 필요는 없음. setPeriodicWave만 호출.
-                } else { // sine, sawtooth, triangle
-                    // 표준 파형을 사용하려는데, 현재 오실레이터 타입과 다르면 재생성
-                    if (oscillator.type !== selectedWaveformType) {
-                        recreateOscillator = true;
-                        console.log(`Recreating oscillator: current type is ${oscillator.type}, but ${selectedWaveformType} is requested.`);
-                    }
-                }
-            }
+            const currentWaveformType = oscillator ? (oscillator.type === 'custom' ? 'square' : oscillator.type) : null;
+            const needsNewOscillator = !oscillator || (selectedWaveformType !== currentWaveformType);
 
-            if (recreateOscillator) {
+            if (needsNewOscillator) {
+                // 기존 오실레이터가 있다면 정지하고 연결 해제 (새로운 시작을 위해)
                 if (oscillator) {
                     try {
                         oscillator.stop();
                         oscillator.disconnect();
+                        console.log("Old oscillator stopped and disconnected for new waveform type.");
                     } catch (e) {
-                        console.warn("Error stopping/disconnecting old oscillator during recreation:", e);
+                        console.warn("Could not stop or disconnect old oscillator, might have already stopped.", e);
                     }
                 }
                 oscillator = audioContext.createOscillator();
                 oscillator.connect(gainNode);
-                oscillator.start();
-                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // 볼륨 설정
-                console.log('Oscillator (re)created and started.');
-            }
+                oscillator.start(audioContext.currentTime); // 현재 시간부터 시작
+                console.log("New oscillator created and started.");
 
+                // 볼륨 설정: 부드럽게 시작
+                gainNode.gain.cancelScheduledValues(audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime); // 0이 아닌 아주 작은 값에서 시작
+                gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.05); // 50ms 동안 볼륨 업
+            }
 
             // 파형 설정
             if (selectedWaveformType === 'square') {
-                console.log(`Applying PeriodicWave with dutyCycle: ${dutyCycle} to oscillator (current type: ${oscillator.type})`);
                 const periodicWave = createSquarePeriodicWave(audioContext, dutyCycle);
-                oscillator.setPeriodicWave(periodicWave); // oscillator.type becomes 'custom'
-            } else { // sine, sawtooth, triangle
-                 if (oscillator.type !== selectedWaveformType) { // 재생성되지 않았지만 타입이 다른 경우 (이론상 위에서 걸러짐)
+                oscillator.setPeriodicWave(periodicWave);
+            } else {
+                if (oscillator.type !== selectedWaveformType) { // 이미 custom이 아니거나, 타입이 다르면 설정
                     oscillator.type = selectedWaveformType;
-                    console.log(`Oscillator type explicitly set to: ${selectedWaveformType}`);
-                 }
+                }
             }
 
-            if (isFinite(frequency)) {
-                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            // 주파수 설정 (부드럽게 변경)
+            if (isFinite(frequency) && frequency > 0) {
+                oscillator.frequency.cancelScheduledValues(audioContext.currentTime);
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime); // 즉시 설정 (잡음 방지)
+                // oscillator.frequency.linearRampToValueAtTime(frequency, audioContext.currentTime + 0.01); // 10ms 동안 부드럽게 변경
             } else {
-                console.error("Invalid frequency value:", frequency);
-                stopTone(); // stopTone이 oscillator를 null로 만듦.
+                console.error("Invalid frequency value for playTone:", frequency);
+                stopTone(); // 유효하지 않은 주파수면 소리 멈춤
                 return;
             }
-            
-            // 볼륨이 0으로 떨어졌을 수 있으므로, 재생 시 다시 설정 (특히 stopTone 후 다시 playTone될 때)
-            if (gainNode.gain.value === 0) { // gainNode.gain.value는 최신 크롬에서 지원. 구형 브라우저는 다른 방법 필요할 수 있음.
-                 gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-            } else { // 부드럽게 올리기
-                 gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.01);
-            }
 
-
-            console.log(`Playing tone. Oscillator actual type: ${oscillator.type}, Requested type: ${selectedWaveformType}, Freq: ${frequency.toFixed(2)} Hz, Duty: ${dutyCycle}`);
+            isOscillatorRunning = true;
+            console.log(`Oscillator parameters set: Type=${oscillator.type}, Freq=${frequency.toFixed(2)}, Duty=${dutyCycle}`);
         }
 
-
+        // 오실레이터 정지 함수
         function stopTone() {
             console.log('stopTone called.');
-            if (oscillator) {
+            if (oscillator && isOscillatorRunning) {
                 try {
-                    if (gainNode && audioContext && audioContext.state === 'running') {
-                        gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime); // 현재 게인 값에서 시작
-                        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.015); // 더 짧게
-                        
-                        // 이미 실행 중인 stop() 타이머가 있다면 취소 (복잡해지므로 여기선 생략, oscillator null 처리로 대응)
-                        const tempOscillator = oscillator; // 임시 변수에 저장
-                        oscillator = null; // 다른 곳에서 중복 호출 방지
-
-                        // stop은 한 번만 호출되어야 함
-                        setTimeout(() => { // ramp가 완료될 시간을 주고 stop
-                           try {
-                               tempOscillator.stop();
-                               tempOscillator.disconnect();
-                               console.log('Oscillator stopped and disconnected after ramp.');
-                           } catch(e) {console.warn("Error in scheduled stop/disconnect:", e)}
-                        }, 20); // ramp 시간보다 약간 길게
-
-                    } else { // 오디오 컨텍스트가 없거나 실행 중이지 않은 경우
-                        const tempOscillator = oscillator;
-                        oscillator = null;
-                        tempOscillator.stop();
-                        tempOscillator.disconnect();
-                        console.log('Oscillator stopped and disconnected (no ramp).');
-                    }
+                    gainNode.gain.cancelScheduledValues(audioContext.currentTime); // 예정된 모든 볼륨 변화 취소
+                    gainNode.gain.setValueAtTime(gainNode.gain.value, audioContext.currentTime); // 현재 게인 값에서 시작
+                    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05); // 50ms 동안 부드럽게 볼륨 감소
+                    
+                    const tempOsc = oscillator; // 참조 저장
+                    tempOsc.stop(audioContext.currentTime + 0.05); // 볼륨 감소 후 정지 예약
+                    tempOsc.onended = () => { // 정지 완료 시 콜백
+                        tempOsc.disconnect();
+                        console.log('Oscillator stopped and disconnected via onended.');
+                    };
                 } catch (e) {
-                    console.warn('Error stopping oscillator:', e);
-                    if (oscillator) { // 만약 위에서 null 처리가 안되었다면 여기서라도
-                       try { oscillator.disconnect(); } catch (ex) {}
-                       oscillator = null; // 확실히 null로 만듦
-                    }
+                    console.warn("Error stopping oscillator:", e);
                 }
-            } else {
-                console.log('stopTone called, but oscillator is already null.');
             }
+            oscillator = null; // 오실레이터 참조 제거
+            isOscillatorRunning = false;
+            console.log('stopTone finished. Oscillator is now:', oscillator);
         }
 
+
+        // Section 1: Sound Canvas
+        let waveCanvas, waveCtx;
         const frequencySlider = document.getElementById('frequencySlider');
         const frequencyValue = document.getElementById('frequencyValue');
         const pitchDescription = document.getElementById('pitchDescription');
-        let waveCanvas; 
-        let waveCtx;    
 
         function drawWave(frequency) {
-            // 캔버스 컨텍스트가 준비되지 않았다면 함수 종료
-            if (!waveCtx || !waveCanvas) return; 
+            if (!waveCtx || !waveCanvas) return;
 
             const width = waveCanvas.width;
             const height = waveCanvas.height;
             const amplitude = height / 3;
             const centerY = height / 2;
-            
+
             waveCtx.clearRect(0, 0, width, height); // 캔버스 지우기
             waveCtx.beginPath(); // 새로운 경로 시작
             waveCtx.moveTo(0, centerY); // 시작점 설정
@@ -899,11 +854,11 @@
             waveCtx.lineWidth = 2; // 선 두께
             waveCtx.stroke(); // 선 그리기
         }
-        
+
         function setupWaveCanvas() {
-            waveCanvas = document.getElementById('waveCanvas'); 
-            if (waveCanvas) { 
-                waveCtx = waveCanvas.getContext('2d'); 
+            waveCanvas = document.getElementById('waveCanvas');
+            if (waveCanvas) {
+                waveCtx = waveCanvas.getContext('2d');
                 const container = waveCanvas.parentElement;
                 waveCanvas.width = container.clientWidth;
                 waveCanvas.height = container.clientHeight;
@@ -911,65 +866,154 @@
             }
         }
 
-        frequencySlider.addEventListener('input', async (event) => { 
+        frequencySlider.addEventListener('input', async (event) => {
             const freq = parseInt(event.target.value);
             frequencyValue.textContent = freq;
-            drawWave(freq); 
+            drawWave(freq);
             if (freq < 7) pitchDescription.textContent = "낮은 음 (저주파)";
             else if (freq < 14) pitchDescription.textContent = "중간 음";
             else if (freq >= 14) pitchDescription.textContent = "높은 음 (고주파)";
 
             const audioFreq = 100 + (freq - 1) * 50;
-            // 섹션 1에서는 항상 사인파로 소리내기 위해 임시로 selectedWaveformType 변경
-            const originalSelectedWaveformTypeForSoundPage = selectedWaveformType;
-            selectedWaveformType = 'sine';
-            await playTone(audioFreq, 0.5); 
-            selectedWaveformType = originalSelectedWaveformTypeForSoundPage; // 원래대로 복구
+            // 섹션 1에서는 항상 사인파로 소리내기 위해 타입 설정
+            const originalSelectedWaveformType = selectedWaveformType; // 기존 파형 타입 저장
+            selectedWaveformType = 'sine'; // 사인파로 강제 설정
+            await playTone(audioFreq, 0.5); // 0.5 duty cycle (사인파에 큰 의미는 없지만 일관성을 위해)
+            selectedWaveformType = originalSelectedWaveformType; // 원래 파형 타입으로 복원
         });
 
         frequencySlider.addEventListener('mouseup', stopTone);
         frequencySlider.addEventListener('touchend', stopTone);
         frequencySlider.addEventListener('mouseleave', stopTone);
-        
-        let timerAnimationCanvas, timerAnimationCtx;
-        let schmittTriggerAnimationCanvas, schmittTriggerAnimationCtx; 
-        let animationTime = 0;
 
-        function drawHeartWaveform(ctx, canvas, type, time) {
+
+        // Section 2: Heart Canvas (555 Timer, Schmitt Trigger)
+        let timerAnimationCanvas, timerAnimationCtx;
+        let schmittTriggerAnimationCanvas, schmittTriggerAnimationCtx;
+        let animationTime = 0;
+        const animationSpeed = 0.025; // 애니메이션 속도 조절 (기존 0.05에서 50% 느리게)
+
+        function draw555TimerWave(ctx, canvas, time) {
+            if (!ctx || !canvas) return;
             const width = canvas.width;
             const height = canvas.height;
             const amplitude = height / 3;
             const centerY = height / 2;
-            const flowSpeed = 0.5; 
 
             ctx.clearRect(0, 0, width, height);
             ctx.beginPath();
-            ctx.moveTo(0, centerY);
+            ctx.strokeStyle = '#EF4444'; // Red for 555 Timer
+            ctx.lineWidth = 3;
+
+            const cycleLength = width / 2; // 두 사이클을 그림
+            const currentPosition = (time * animationSpeed * cycleLength) % cycleLength;
 
             for (let x = 0; x < width; x++) {
+                const effectiveX = (x + currentPosition) % cycleLength;
                 let y;
-                const angle = ((x / width) * Math.PI * 4) + (time * flowSpeed); 
-
-                if (type === 'pulse') {
-                    y = centerY + amplitude * (Math.sin(angle) > 0.8 ? 1 : -1); 
-                } else if (type === 'square') {
-                    y = centerY + amplitude * (Math.sin(angle) > 0 ? 1 : -1);
+                if (effectiveX < cycleLength * 0.7) { // Duty cycle of approx 70%
+                    y = centerY - amplitude;
+                } else {
+                    y = centerY + amplitude;
                 }
-                ctx.lineTo(x, y);
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
             }
-            ctx.strokeStyle = 'rgb(59, 130, 246)';
+            ctx.stroke();
+
+            // 배경에 흐릿한 파형 추가
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)'; // Semi-transparent red
             ctx.lineWidth = 2;
+            const bgOffset = currentPosition + cycleLength / 4; // 살짝 다른 위치에서 시작
+            for (let x = 0; x < width; x++) {
+                const effectiveX = (x + bgOffset) % cycleLength;
+                let y;
+                if (effectiveX < cycleLength * 0.6) { // 다른 듀티 사이클
+                    y = centerY - amplitude * 0.8;
+                } else {
+                    y = centerY + amplitude * 0.8;
+                }
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
             ctx.stroke();
         }
 
+        function drawSchmittTriggerWave(ctx, canvas, time) {
+            if (!ctx || !canvas) return;
+            const width = canvas.width;
+            const height = canvas.height;
+            const amplitude = height / 3;
+            const centerY = height / 2;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#10B981'; // Green for Schmitt Trigger
+            ctx.lineWidth = 3;
+
+            const cycleLength = width / 2; // 두 사이클을 그림
+            const currentPosition = (time * animationSpeed * cycleLength) % cycleLength;
+
+            // 입력 신호 (약간 노이즈 있는 사인파)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)'; // Light green for input
+            ctx.lineWidth = 1;
+            for (let x = 0; x < width; x++) {
+                const y = centerY + amplitude * 0.8 * Math.sin((x + currentPosition) * 0.1) + Math.random() * 10 - 5; // 노이즈 추가
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // 출력 신호 (깨끗한 사각파)
+            ctx.beginPath();
+            ctx.strokeStyle = '#10B981'; // Green
+            ctx.lineWidth = 3;
+            for (let x = 0; x < width; x++) {
+                const effectiveX = (x + currentPosition) % cycleLength;
+                let y;
+                if (effectiveX < cycleLength / 2) {
+                    y = centerY - amplitude;
+                } else {
+                    y = centerY + amplitude;
+                }
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke();
+
+            // 임계값 선
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, centerY - amplitude * 0.4);
+            ctx.lineTo(width, centerY - amplitude * 0.4);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, centerY + amplitude * 0.4);
+            ctx.lineTo(width, centerY + amplitude * 0.4);
+            ctx.stroke();
+            ctx.setLineDash([]); // 다시 원래대로
+        }
+
         function animateHeartWaves() {
-            animationTime += 0.1; 
-            if (timerAnimationCtx && timerAnimationCanvas) {
-                drawHeartWaveform(timerAnimationCtx, timerAnimationCanvas, 'pulse', animationTime);
-            }
-            if (schmittTriggerAnimationCtx && schmittTriggerAnimationCanvas) {
-                drawHeartWaveform(schmittTriggerAnimationCtx, schmittTriggerAnimationCanvas, 'square', animationTime);
-            }
+            animationTime += 1;
+            draw555TimerWave(timerAnimationCtx, timerAnimationCanvas, animationTime);
+            drawSchmittTriggerWave(schmittTriggerAnimationCtx, schmittTriggerAnimationCanvas, animationTime);
             window.timerAnimationId = requestAnimationFrame(animateHeartWaves);
         }
 
@@ -985,16 +1029,17 @@
             if (schmittTriggerAnimationCanvas) {
                 schmittTriggerAnimationCtx = schmittTriggerAnimationCanvas.getContext('2d');
                 schmittTriggerAnimationCanvas.width = schmittTriggerAnimationCanvas.parentElement.clientWidth;
-                schmittTriggerAnimationCanvas.height = schmittTriggerAnimationCanvas.parentElement.clientHeight;
+                schmittTriggerAnimationCtx.height = schmittTriggerAnimationCanvas.parentElement.clientHeight;
             }
         }
 
         function startHeartAnimations() {
-            setupHeartCanvases(); 
-            if (window.timerAnimationId === null) { 
-                animationTime = 0; 
+            setupHeartCanvases();
+            if (window.timerAnimationId === null) {
+                animationTime = 0;
                 animateHeartWaves();
             }
+
             const opampAnimation = document.getElementById('opampAnimation');
             if (opampAnimation && !opampAnimation.animationInterval) { // 중복 실행 방지
                 let lm386SignalSize = 10;
@@ -1006,111 +1051,108 @@
         }
 
         function stopHeartAnimations() {
-            if (window.timerAnimationId) { 
-                cancelAnimationFrame(window.timerAnimationId); 
-                window.timerAnimationId = null; 
+            if (window.timerAnimationId) {
+                cancelAnimationFrame(window.timerAnimationId);
+                window.timerAnimationId = null;
             }
             const opampAnimation = document.getElementById('opampAnimation');
             if (opampAnimation && opampAnimation.animationInterval) {
                 clearInterval(opampAnimation.animationInterval);
-                opampAnimation.innerHTML = `신호 증폭 중... (볼륨 업!)`; 
+                opampAnimation.innerHTML = `신호 증폭 중... (볼륨 업!)`;
                 opampAnimation.animationInterval = null;
             }
         }
 
-        window.addEventListener('load', async () => { 
+        window.addEventListener('load', async () => {
             setupWaveCanvas();
             setupSynthCanvas();
             setupHandsCanvases(); // Added to ensure hands canvas is set up on load
-            // setupSlides(); // 슬라이드 초기화 호출은 이제 필요 없습니다 (Canva iframe 직접 임베드).
-            showSection('sound'); 
-
+            showSection('sound');
             const mainPageOverlay = document.getElementById('main-page-overlay');
             if (mainPageOverlay) {
                 mainPageOverlay.classList.remove('hidden');
             }
         });
 
-
+        // Section 3: Hands (Potentiometer, Tact Switch)
         const potentiometerDemo = document.getElementById('potentiometerDemo');
         const potentiometerValue = document.getElementById('potentiometerValue');
-        potentiometerDemo.addEventListener('input', async (event) => { 
-            potentiometerValue.textContent = event.target.value;
-            if (isTactOn && currentActiveSectionId === 'hands') { 
-                const val = parseInt(event.target.value);
-                const audioFreq = 200 + (val / 100) * 1000; 
-                // Fix: Ensure selectedWaveformType is set to 'square' for this section
-                const originalSelectedWaveformType = selectedWaveformType; // Save original
-                selectedWaveformType = 'square'; // Force square for this section
-                if (oscillator) { 
-                    if (isFinite(audioFreq)) {
-                        // Use the handsCurrentPulseWidth for the duty cycle
-                        await playTone(audioFreq, handsCurrentPulseWidth / 100); 
-                    } else {
-                        console.error("Invalid audioFreq value from potentiometer:", audioFreq);
-                        stopTone();
-                    }
-                }
-                selectedWaveformType = originalSelectedWaveformType; // Restore original
-            }
-        });
 
+        if (potentiometerDemo) {
+            potentiometerDemo.addEventListener('input', async (event) => { // async 추가
+                potentiometerValue.textContent = event.target.value;
+                // 택트 스위치가 눌려있으면 소리도 업데이트
+                if (isTactOn && currentActiveSectionId === 'hands') {
+                    const potVal = parseInt(event.target.value);
+                    const audioFreq = 200 + (potVal / 100) * 1000; // 200Hz to 1200Hz
+                    // `handsCurrentPulseWidth`를 사용 (Hands 섹션 전용)
+                    // 현재 selectedWaveformType이 play 섹션에 맞춰져 있을 수 있으므로, hands 섹션에선 'square'로 고정
+                    const originalSelectedWaveformType = selectedWaveformType;
+                    selectedWaveformType = 'square';
+                    await playTone(audioFreq, handsCurrentPulseWidth / 100);
+                    selectedWaveformType = originalSelectedWaveformType; // 원복
+                }
+            });
+        }
 
         const tactSwitchDemo = document.getElementById('tactSwitchDemo');
+        let isTactOn = false; // 택트 스위치 상태
         const tactSwitchStatus = document.getElementById('tactSwitchStatus');
-        let isTactOn = false; 
-        
-        async function handleTactSwitch(on) { 
-            console.log('handleTactSwitch called. on:', on, 'isTactOn:', isTactOn, 'currentActiveSectionId:', currentActiveSectionId); 
-            if (on && !isTactOn && currentActiveSectionId === 'hands') { 
+
+        async function handleTactSwitch(on) {
+            console.log(`handleTactSwitch called with on=${on}, isTactOn=${isTactOn}, currentActiveSectionId=${currentActiveSectionId}`);
+            if (currentActiveSectionId !== 'hands') { // hands 섹션이 아니면 작동하지 않음
+                console.log("Not in 'hands' section, ignoring tact switch.");
+                return;
+            }
+
+            if (on && !isTactOn) {
                 isTactOn = true;
-                tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생!)';
+                tactSwitchStatus.textContent = '스위치 상태: 켜짐 (소리 재생 중)';
                 tactSwitchDemo.classList.add('bg-red-500', 'hover:bg-red-600');
                 tactSwitchDemo.classList.remove('bg-sky-500', 'hover:bg-sky-600');
                 
                 const potVal = parseInt(potentiometerDemo.value);
                 const audioFreq = 200 + (potVal / 100) * 1000;
-                // Fix: Ensure selectedWaveformType is set to 'square' for this section
-                const originalSelectedWaveformType = selectedWaveformType; // Save original
-                selectedWaveformType = 'square'; // Force square for this section
-                // Use the handsCurrentPulseWidth for the duty cycle
-                await playTone(audioFreq, handsCurrentPulseWidth / 100); 
-                selectedWaveformType = originalSelectedWaveformType; // Restore original
+                // `handsCurrentPulseWidth`를 사용 (Hands 섹션 전용)
+                const originalSelectedWaveformType = selectedWaveformType;
+                selectedWaveformType = 'square';
+                await playTone(audioFreq, handsCurrentPulseWidth / 100);
+                selectedWaveformType = originalSelectedWaveformType; // 원복
 
-            } else if (!on && isTactOn && currentActiveSectionId === 'hands') { 
+            } else if (!on && isTactOn) {
                 isTactOn = false;
                 tactSwitchStatus.textContent = '스위치 상태: 꺼짐 (마우스 클릭 또는 스페이스바 키로 조작)';
                 tactSwitchDemo.classList.remove('bg-red-500', 'hover:bg-red-600');
                 tactSwitchDemo.classList.add('bg-sky-500', 'hover:bg-sky-600');
-                stopTone(); 
+                stopTone(); // 오실레이터 정지
             }
         }
 
         tactSwitchDemo.addEventListener('mousedown', (event) => {
-            console.log('Tact switch mousedown event fired.'); 
-            event.preventDefault(); 
+            console.log('Tact switch mousedown event fired.');
+            event.preventDefault();
             handleTactSwitch(true);
         });
         tactSwitchDemo.addEventListener('mouseup', () => handleTactSwitch(false));
         tactSwitchDemo.addEventListener('mouseleave', () => {
-            if (isTactOn) handleTactSwitch(false); 
+            if (isTactOn) handleTactSwitch(false);
         });
 
         tactSwitchDemo.addEventListener('touchstart', (event) => {
-            console.log('Tact switch touchstart event fired.'); 
-            event.preventDefault(); 
+            console.log('Tact switch touchstart event fired.');
+            event.preventDefault();
             handleTactSwitch(true);
-        }, { passive: false }); 
-
+        }, { passive: false });
         tactSwitchDemo.addEventListener('touchend', () => {
-            console.log('Tact switch touchend event fired.'); 
+            console.log('Tact switch touchend event fired.');
             handleTactSwitch(false);
         });
-        
-        let isSpaceOrEnterPressed = false; 
-        document.addEventListener('keydown', (event) => {
+
+        let isSpaceOrEnterPressed = false;
+        document.addEventListener('keydown', async (event) => {
             if (currentActiveSectionId === 'hands' && (event.key === ' ' || event.key === 'Enter') && !isSpaceOrEnterPressed) {
-                event.preventDefault(); 
+                event.preventDefault();
                 isSpaceOrEnterPressed = true;
                 handleTactSwitch(true);
             }
@@ -1123,88 +1165,109 @@
             }
         });
 
-
+        // Section 4: Play (Synth Simulator)
         let synthPitchKnob = document.getElementById('synthPitchKnob');
         let synthPitchValue = document.getElementById('synthPitchValue');
         const synthButtons = document.querySelectorAll('.synth-button');
         let synthOutputStatus = document.getElementById('synthOutputStatus');
-        let synthOutputCanvas; 
-        let synthCtx;    
+        
+        let synthOutputCanvas;
+        let synthCtx;
 
         const pulseWidthControl = document.getElementById('pulseWidthControl');
         const pulseWidthKnob = document.getElementById('pulseWidthKnob');
         const pulseWidthValue = document.getElementById('pulseWidthValue');
-        let currentPulseWidth = 50; 
-        
-        function drawSynthWave(frequency, type, dutyCycle = 50) {
-            if (!synthCtx || !synthOutputCanvas) return; 
+        // `currentPulseWidth`는 이제 전역 변수로 최상단에 선언됩니다.
+
+        function drawSynthWave(frequency, waveformType, dutyCycle = 0.5) {
+            if (!synthCtx || !synthOutputCanvas) {
+                console.warn('synthOutputCanvas or synthCtx is not initialized in drawSynthWave.');
+                return;
+            }
 
             const width = synthOutputCanvas.width;
             const height = synthOutputCanvas.height;
             const amplitude = height / 3;
             const centerY = height / 2;
-            
-            synthCtx.clearRect(0, 0, width, height); 
-            synthCtx.beginPath(); 
-            synthCtx.moveTo(0, centerY); 
 
-            const visualCycles = frequency > 0 ? Math.max(1, frequency / 150) : 2; // 최소 1 사이클, 주파수가 너무 낮으면 2사이클
-            const period = width / visualCycles; 
-            const onWidth = period * (dutyCycle / 100); 
+            synthCtx.clearRect(0, 0, width, height);
+            synthCtx.beginPath();
+            synthCtx.moveTo(0, centerY);
+
+            // 주파수가 0이면 파형을 그리지 않음 (소리가 나지 않는 상태 표현)
+            if (frequency === 0) {
+                synthCtx.strokeStyle = 'rgba(16, 185, 129, 0.3)'; // 흐릿하게
+                synthCtx.lineWidth = 1;
+                synthCtx.font = '16px Inter';
+                synthCtx.fillStyle = 'rgba(16, 185, 129, 0.6)';
+                synthCtx.textAlign = 'center';
+                synthCtx.fillText('소리가 재생되지 않고 있습니다.', width / 2, height / 2);
+                synthCtx.stroke();
+                return;
+            }
+
+
+            const numCycles = 2; // 화면에 2주기 표시
+            const totalWidthPerCycle = width / numCycles;
 
             for (let x = 0; x < width; x++) {
                 let y;
-                const angle = (x / width) * Math.PI * 2 * visualCycles; 
+                // 주파수를 시각화에 맞게 조정 (너무 빠르면 파형이 뭉개짐)
+                // 실제 주파수 값에 비례하여 시각화 주기 결정
+                const effectiveFrequencyForViz = Math.max(1, Math.min(1000, frequency / 10)); // 시각화 범위를 적절히 제한
+                const angle = (x / width) * Math.PI * 2 * (effectiveFrequencyForViz / 50); // 50은 시각적 기준 주파수
 
-                switch (type) { 
+                switch (waveformType) {
                     case 'sine':
                         y = centerY + amplitude * Math.sin(angle);
                         break;
                     case 'square':
-                        const phaseInPeriod = (x % period);
-                        if (phaseInPeriod < onWidth) {
-                            y = centerY - amplitude; 
+                        const phaseForSquare = (x / totalWidthPerCycle * (2 * Math.PI)) % (2 * Math.PI);
+                        const onDurationSquare = (2 * Math.PI) * dutyCycle;
+                        if (phaseForSquare < onDurationSquare) {
+                            y = centerY - amplitude;
                         } else {
-                            y = centerY + amplitude; 
+                            y = centerY + amplitude;
                         }
                         break;
                     case 'sawtooth':
-                        y = centerY - amplitude * (angle % (2 * Math.PI) / (2 * Math.PI) * 2 - 1);
+                        y = centerY - amplitude * ((angle % (2 * Math.PI)) / (2 * Math.PI) * 2 - 1);
                         break;
                     case 'triangle':
-                        const phase = angle % (2 * Math.PI);
-                        if (phase < Math.PI) {
-                            y = centerY - amplitude * (1 - (phase / Math.PI) * 2);
+                        const phaseForTriangle = angle % (2 * Math.PI);
+                        if (phaseForTriangle < Math.PI) {
+                            y = centerY - amplitude * (1 - (phaseForTriangle / Math.PI) * 2);
                         } else {
-                            y = centerY - amplitude * (-1 + ((phase - Math.PI) / Math.PI) * 2);
+                            y = centerY - amplitude * (-1 + ((phaseForTriangle - Math.PI) / Math.PI) * 2);
                         }
                         break;
                     default:
-                        y = centerY + amplitude * Math.sin(angle); 
+                        y = centerY + amplitude * Math.sin(angle);
                 }
                 synthCtx.lineTo(x, y);
             }
-            synthCtx.strokeStyle = 'rgb(16, 185, 129)'; 
-            synthCtx.lineWidth = 2; 
-            synthCtx.stroke(); 
+            synthCtx.strokeStyle = 'rgb(16, 185, 129)';
+            synthCtx.lineWidth = 2;
+            synthCtx.stroke();
         }
 
         function setupSynthCanvas() {
-            synthOutputCanvas = document.getElementById('synthOutputCanvas'); 
-            if (synthOutputCanvas) { 
-                synthCtx = synthOutputCanvas.getContext('2d'); 
+            synthOutputCanvas = document.getElementById('synthOutputCanvas');
+            if (synthOutputCanvas) {
+                synthCtx = synthOutputCanvas.getContext('2d');
                 const container = synthOutputCanvas.parentElement;
                 synthOutputCanvas.width = container.clientWidth;
                 synthOutputCanvas.height = container.clientHeight;
-                drawSynthWave(0, selectedWaveformType, currentPulseWidth); 
+                drawSynthWave(0, selectedWaveformType, currentPulseWidth);
             }
         }
-    
+
+        // Hands section specific canvas (Pulse Width)
         const handsPulseWidthKnob = document.getElementById('handsPulseWidthKnob');
         const handsPulseWidthValue = document.getElementById('handsPulseWidthValue');
-        let handsPulseWidthCanvas; 
-        let handsPulseWidthCtx;    
-        let handsCurrentPulseWidth = 50;
+        let handsPulseWidthCanvas;
+        let handsPulseWidthCtx;
+        let handsCurrentPulseWidth = 50; // Default for hands pulse width
         let handsAnimationTime = 0;
 
         function drawHandsPulseWave(dutyCycle, time) {
@@ -1212,12 +1275,11 @@
                 console.warn('handsPulseWidthCanvas or handsPulseWidthCtx is not initialized in drawHandsPulseWave.');
                 return;
             }
-
             const width = handsPulseWidthCanvas.width;
             const height = handsPulseWidthCanvas.height;
             const amplitude = height / 3;
             const centerY = height / 2;
-            const flowSpeed = 0.5;
+            const flowSpeed = 0.25; // 애니메이션 속도 조절 (기존 0.5에서 50% 느리게)
             const visualCycles = 2;
             const totalPixelsPerCycle = width / visualCycles;
             const onWidth = totalPixelsPerCycle * (dutyCycle / 100);
@@ -1225,6 +1287,7 @@
 
             handsPulseWidthCtx.clearRect(0, 0, width, height);
             handsPulseWidthCtx.beginPath();
+
             const initialAdjustedX = offset % totalPixelsPerCycle;
             const initialY = (initialAdjustedX < onWidth) ? (centerY - amplitude) : (centerY + amplitude);
             handsPulseWidthCtx.moveTo(0, initialY);
@@ -1242,7 +1305,7 @@
                 }
             }
 
-            handsPulseWidthCtx.strokeStyle = 'rgb(124, 58, 237)';
+            handsPulseWidthCtx.strokeStyle = 'rgb(139, 92, 246)'; // Purple
             handsPulseWidthCtx.lineWidth = 2;
             handsPulseWidthCtx.stroke();
         }
@@ -1251,9 +1314,8 @@
             handsPulseWidthCanvas = document.getElementById('handsPulseWidthCanvas');
             if (handsPulseWidthCanvas) {
                 handsPulseWidthCtx = handsPulseWidthCanvas.getContext('2d');
-                const container = handsPulseWidthCanvas.parentElement;
-                handsPulseWidthCanvas.width = container.clientWidth;
-                handsPulseWidthCanvas.height = container.clientHeight;
+                handsPulseWidthCanvas.width = handsPulseWidthCanvas.parentElement.clientWidth;
+                handsPulseWidthCanvas.height = handsPulseWidthCanvas.parentElement.clientHeight;
                 drawHandsPulseWave(handsCurrentPulseWidth, handsAnimationTime);
             }
         }
@@ -1291,12 +1353,13 @@
 
                 if (isTactOn && currentActiveSectionId === 'hands') {
                     console.log('Tact switch is ON in Hands section. Updating audio with duty cycle:', handsCurrentPulseWidth / 100);
-                    const originalSelectedWaveformType = selectedWaveformType;
-                    selectedWaveformType = 'square';
                     const potVal = parseInt(potentiometerDemo.value);
                     const audioFreq = 200 + (potVal / 100) * 1000;
+                    // 'square' 파형으로 고정하여 재생
+                    const originalSelectedWaveformType = selectedWaveformType;
+                    selectedWaveformType = 'square'; // Temporarily set for playTone
                     await playTone(audioFreq, handsCurrentPulseWidth / 100);
-                    selectedWaveformType = originalSelectedWaveformType;
+                    selectedWaveformType = originalSelectedWaveformType; // Restore original
                 }
             });
         }
@@ -1305,38 +1368,51 @@
             'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00, 'B5': 987.77,
             'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88
         };
+        let currentPlayingBaseFreq = 0; // 현재 연주 중인 건반의 기본 주파수
 
-        synthPitchKnob.addEventListener('input', async (event) => { 
+        synthPitchKnob.addEventListener('input', async (event) => {
             const pitch = parseInt(event.target.value);
             synthPitchValue.textContent = pitch;
 
-            if (oscillator && currentPlayingBaseFreq !== 0) {
-                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5; 
+            if (isOscillatorRunning && currentPlayingBaseFreq !== 0) {
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = currentPlayingBaseFreq * pitchMultiplier;
-                if (isFinite(finalFreq)) {
-                    await playTone(finalFreq, currentPulseWidth / 100); 
+                
+                if (isFinite(finalFreq) && finalFreq > 0) { // 주파수가 유효한지 확인
+                    // 오실레이터가 이미 실행 중이면 파형 타입 변경 없이 주파수만 업데이트
+                    if (oscillator) {
+                        oscillator.frequency.cancelScheduledValues(audioContext.currentTime);
+                        oscillator.frequency.setValueAtTime(finalFreq, audioContext.currentTime);
+                    }
+                    drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); // 파형 시각화 업데이트
                 } else {
-                    console.error("Invalid finalFreq value:", finalFreq);
-                    stopTone(); 
+                    console.error("Invalid finalFreq value from pitch knob:", finalFreq);
+                    stopTone();
                     return;
                 }
                 
+                // 현재 활성화된 건반의 상태 메시지 업데이트
                 const activeNoteButton = document.querySelector('.synth-button.ring-4');
                 if (activeNoteButton) {
-                    const noteFull = activeNoteButton.dataset.noteFull; 
+                    const noteFull = activeNoteButton.dataset.noteFull;
                     const noteName = noteFull.slice(0, -1);
                     const octave = parseInt(noteFull.slice(-1));
                     const noteTextMap = { 'C': '도', 'D': '레', 'E': '미', 'F': '파', 'G': '솔', 'A': '라', 'B': '시' };
-                    const displayNote = `${noteTextMap[noteName]}${octave - 3}`; 
+                    const displayNote = `${noteTextMap[noteName]}${octave - 3}`;
 
-                    synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
-                    drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); 
+                    synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`;
+                }
+            } else {
+                // 소리가 재생 중이 아니면, 시각화만 업데이트 (주파수 0으로)
+                if (currentActiveSectionId === 'play') {
+                    drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                 }
             }
         });
 
-        document.querySelectorAll('input[name="waveformType"]').forEach(radio => {
-            radio.addEventListener('change', async (event) => { 
+        const waveformRadios = document.querySelectorAll('input[name="waveformType"]');
+        waveformRadios.forEach(radio => {
+            radio.addEventListener('change', async (event) => {
                 selectedWaveformType = event.target.value;
                 console.log(`Waveform changed to: ${selectedWaveformType}`);
 
@@ -1347,10 +1423,10 @@
                     pulseWidthControl.classList.add('hidden');
                 }
 
-                if (oscillator && currentPlayingBaseFreq !== 0) { // 현재 소리가 재생 중이면 파형 즉시 변경
+                if (isOscillatorRunning && currentPlayingBaseFreq !== 0) { // 현재 소리가 재생 중이면 파형 즉시 변경
                     const pitch = parseInt(synthPitchKnob.value);
                     const finalFreq = currentPlayingBaseFreq * (0.5 + (pitch / 100) * 1.5);
-                    await playTone(finalFreq, currentPulseWidth / 100); 
+                    await playTone(finalFreq, currentPulseWidth / 100); // 새로운 파형으로 재생
                     // 상태 텍스트 및 파형도 업데이트
                     const activeNoteButton = document.querySelector('.synth-button.ring-4');
                      if (activeNoteButton) {
@@ -1364,64 +1440,76 @@
                     }
 
                 } else { // 소리가 재생 중이 아니면, 시각화만 업데이트
-                    if (currentActiveSectionId === 'play') { 
+                    if (currentActiveSectionId === 'play') {
                         drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                     }
                 }
             });
         });
 
-        pulseWidthKnob.addEventListener('input', async (event) => { 
+        pulseWidthKnob.addEventListener('input', async (event) => {
             currentPulseWidth = parseInt(event.target.value);
             pulseWidthValue.textContent = currentPulseWidth;
 
-            if (oscillator && currentPlayingBaseFreq !== 0) {
+            if (isOscillatorRunning && currentPlayingBaseFreq !== 0) {
                 const pitch = parseInt(synthPitchKnob.value);
                 const finalFreq = currentPlayingBaseFreq * (0.5 + (pitch / 100) * 1.5);
                 drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); // 시각화는 항상 업데이트
                 if (selectedWaveformType === 'square') { // 사각파일 때만 오디오 업데이트
-                    await playTone(finalFreq, currentPulseWidth / 100); 
+                    // 오실레이터가 이미 사각파라면 setPeriodicWave로 듀티 사이클만 업데이트
+                    if (oscillator && oscillator.type === 'custom') {
+                        const periodicWave = createSquarePeriodicWave(audioContext, currentPulseWidth / 100);
+                        oscillator.setPeriodicWave(periodicWave);
+                    } else { // 사각파가 아니었다면 새로 생성하여 사각파로 변경
+                        await playTone(finalFreq, currentPulseWidth / 100);
+                    }
                 }
             } else {
                 if (selectedWaveformType === 'square' && currentActiveSectionId === 'play') {
-                     drawSynthWave(0, selectedWaveformType, currentPulseWidth); 
+                     drawSynthWave(0, selectedWaveformType, currentPulseWidth);
                 }
             }
         });
 
-        const noteHueMap = { 'C': 0, 'D': 30, 'E': 60, 'F': 120, 'G': 240, 'A': 270, 'B': 300 };
-        const octaveLightness = { '5': 80, '4': 60 };
-        const fixedSaturation = 80; 
+        const noteHueMap = {
+            'C': 0, 'D': 30, 'E': 60, 'F': 120, 'G': 240, 'A': 270, 'B': 300
+        };
+        const octaveLightness = {
+            '5': 80, // Higher octave, brighter
+            '4': 60  // Lower octave, slightly darker
+        };
+        const fixedSaturation = 80;
 
         function getNoteGradient(noteFull) {
-            const noteName = noteFull.slice(0, -1); 
-            const octave = noteFull.slice(-1);    
-
-            const hue = noteHueMap[noteName] || 0; 
-            const lightness = octaveLightness[octave] || 70; 
+            const noteName = noteFull.slice(0, -1);
+            const octave = noteFull.slice(-1);
+            const hue = noteHueMap[noteName] || 0;
+            const lightness = octaveLightness[octave] || 70; // Default lightness
 
             const startColor = `hsl(${hue}, ${fixedSaturation}%, ${lightness}%)`;
-            const endColor = `hsl(${hue}, ${fixedSaturation}%, ${lightness - 20}%)`; 
+            const endColor = `hsl(${hue}, ${fixedSaturation}%, ${lightness - 20}%)`; // Darker end
 
             return `linear-gradient(to bottom, ${startColor}, ${endColor})`;
         }
+
 
         synthButtons.forEach(button => {
             const noteFull = button.dataset.noteFull;
             button.style.background = getNoteGradient(noteFull);
 
-            button.addEventListener('mousedown', async (event) => { 
-                console.log('Synth button mousedown event fired for:', button.dataset.noteFull); 
-                event.preventDefault(); 
-                const noteFull = button.dataset.noteFull; 
+            button.addEventListener('mousedown', async (event) => {
+                console.log('Synth button mousedown event fired for:', button.dataset.noteFull);
+                event.preventDefault(); // Prevent text selection
+                const noteFull = button.dataset.noteFull;
                 const pitch = parseInt(synthPitchKnob.value);
                 
                 let baseFreq = noteFrequencies[noteFull];
-                currentPlayingBaseFreq = baseFreq; 
+                currentPlayingBaseFreq = baseFreq; // Save the base frequency for pitch knob adjustment
 
-                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5; 
+                const pitchMultiplier = 0.5 + (pitch / 100) * 1.5;
                 const finalFreq = baseFreq * pitchMultiplier;
 
+                // 다른 버튼의 활성 표시 제거 및 현재 버튼에 활성 표시 추가
                 document.querySelectorAll('.synth-button.ring-4').forEach(b => {
                     b.classList.remove('ring-4', 'ring-blue-500', 'scale-105');
                 });
@@ -1430,36 +1518,38 @@
                 const noteName = noteFull.slice(0, -1);
                 const octave = parseInt(noteFull.slice(-1));
                 const noteTextMap = { 'C': '도', 'D': '레', 'E': '미', 'F': '파', 'G': '솔', 'A': '라', 'B': '시' };
-                const displayNote = `${noteTextMap[noteName]}${octave - 3}`; 
+                const displayNote = `${noteTextMap[noteName]}${octave - 3}`;
 
-                synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`; 
-                drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth); 
-                await playTone(finalFreq, currentPulseWidth / 100); 
+                synthOutputStatus.textContent = `${displayNote} 음 (${selectedWaveformType}파) 재생! (주파수: ${finalFreq.toFixed(2)} Hz)`;
+                drawSynthWave(finalFreq, selectedWaveformType, currentPulseWidth);
+                await playTone(finalFreq, currentPulseWidth / 100);
             });
 
             button.addEventListener('mouseup', () => {
-                console.log('Synth button mouseup event fired for:', button.dataset.noteFull); 
+                console.log('Synth button mouseup event fired.');
                 stopTone();
                 button.classList.remove('ring-4', 'ring-blue-500', 'scale-105');
                 synthOutputStatus.textContent = '버튼을 눌러 연주해보세요!';
-                drawSynthWave(0, selectedWaveformType, currentPulseWidth); 
-                currentPlayingBaseFreq = 0; 
+                drawSynthWave(0, selectedWaveformType, currentPulseWidth); // Reset visualization
+                currentPlayingBaseFreq = 0; // Reset base frequency
             });
 
             button.addEventListener('mouseleave', () => {
-                 console.log('Synth button mouseleave event fired.'); 
-                 if (button.classList.contains('ring-4')) {
+                console.log('Synth button mouseleave event fired.');
+                // 마우스가 버튼을 벗어났을 때, 버튼이 눌려있던 상태였다면 소리 정지
+                if (button.classList.contains('ring-4')) {
                     stopTone();
                     button.classList.remove('ring-4', 'ring-blue-500', 'scale-105');
                     synthOutputStatus.textContent = '버튼을 눌러 연주해보세요!';
-                    drawSynthWave(0, selectedWaveformType, currentPulseWidth); 
+                    drawSynthWave(0, selectedWaveformType, currentPulseWidth); // Reset visualization
                     currentPlayingBaseFreq = 0;
-                 }
+                }
             });
 
-            button.addEventListener('touchstart', async (event) => { 
-                console.log('Synth button touchstart event fired for:', button.dataset.noteFull); 
-                event.preventDefault(); 
+            // Touch events for mobile
+            button.addEventListener('touchstart', async (event) => {
+                console.log('Synth button touchstart event fired for:', button.dataset.noteFull);
+                event.preventDefault(); // Prevent scrolling and default touch behavior
                 const noteFull = button.dataset.noteFull;
                 const pitch = parseInt(synthPitchKnob.value);
 
@@ -1492,6 +1582,13 @@
                 currentPlayingBaseFreq = 0;
             });
         });
+
+        // Keyboard control for synth (Play 섹션에서는 제거됨)
+        // const keyboardNoteMap = { ... };
+        // let activeKeys = {};
+        // document.addEventListener('keydown', async (event) => { /* ... */ });
+        // document.addEventListener('keyup', (event) => { /* ... */ });
+
 
         document.addEventListener('DOMContentLoaded', () => {
             const sineRadioPlay = document.querySelector('#play input[name="waveformType"][value="sine"]');
