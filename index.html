@@ -1,0 +1,2166 @@
+            navig<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DIY 아날로그 신디사이저 | 전자음악의 세계로</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #06b6d4;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --dark-bg: #0f172a;
+            --dark-surface: #1e293b;
+            --dark-card: #334155;
+            --light-text: #f1f5f9;
+            --muted-text: #94a3b8;
+            --border-color: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: var(--light-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--glass-bg);
+            color: var(--primary-color);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--glass-bg);
+        }
+
+        /* Mobile Navigation */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(15, 23, 42, 0.98);
+                backdrop-filter: blur(20px);
+                border-radius: 0 0 1rem 1rem;
+                border: 1px solid var(--border-color);
+                border-top: none;
+                padding: 1rem;
+                gap: 0;
+                flex-direction: column;
+                transform: translateY(-20px);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                z-index: 1000;
+            }
+
+            .nav-menu.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .nav-item {
+                width: 100%;
+                text-align: center;
+                padding: 1rem;
+                margin-bottom: 0.5rem;
+                border-radius: 0.8rem;
+            }
+        }
+
+        /* Navigation Arrows */
+        .section-navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 999;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-arrow {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-arrow:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-arrow:disabled {
+            background: var(--muted-text);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .section-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .section-navigation {
+                bottom: 1rem;
+                padding: 0.8rem;
+            }
+
+            .nav-arrow {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+
+            .section-indicator {
+                font-size: 0.8rem;
+                padding: 0 0.5rem;
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            min-height: calc(100vh - 80px);
+            padding: 4rem 0;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--muted-text);
+            margin-bottom: 4rem;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        /* Welcome Section */
+        .hero {
+            text-align: center;
+            padding: 6rem 0;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--muted-text);
+            margin-bottom: 3rem;
+        }
+
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        /* Waveform Demo */
+        .waveform-demo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .waveform-card {
+            background: var(--dark-card);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .waveform-card:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.02);
+        }
+
+        .waveform-canvas {
+            width: 100%;
+            height: 80px;
+            background: var(--dark-bg);
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .play-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .play-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .play-button:active {
+            transform: translateY(0);
+        }
+
+        /* Synthesizer Interface */
+        .synth-interface {
+            background: var(--dark-surface);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .control-group {
+            background: var(--glass-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+        }
+
+        .control-group h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-label {
+            font-weight: 500;
+            color: var(--light-text);
+            min-width: 80px;
+        }
+
+        .control-input {
+            flex: 1;
+            margin: 0 1rem;
+        }
+
+        .control-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent-color);
+            background: var(--dark-bg);
+            padding: 0.3rem 0.6rem;
+            border-radius: 0.3rem;
+        }
+
+        /* Custom Range Slider */
+        .range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--dark-bg);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Custom Select */
+        .custom-select {
+            background: var(--dark-bg);
+            color: var(--light-text);
+            border: 2px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .custom-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Recording Controls */
+        .recording-panel {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .record-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .record-btn.primary {
+            background: linear-gradient(135deg, var(--error-color), #dc2626);
+            color: white;
+        }
+
+        .record-btn.success {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+        }
+
+        .record-btn.warning {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+        }
+
+        .record-btn.secondary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .record-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .record-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .record-btn.recording {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Status Display */
+        .status-display {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.8rem;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 2rem 0;
+            font-weight: 500;
+            color: var(--accent-color);
+        }
+
+        /* Piano Keyboard */
+        .piano-wrapper {
+            background: var(--dark-bg);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            overflow-x: auto;
+            box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.4);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .piano-keyboard {
+            position: relative;
+            height: 240px;
+            min-width: 1500px;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            overflow: visible;
+        }
+
+        .piano-key {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.1s ease;
+            position: absolute;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .white-key {
+            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 30%, #e9ecef 70%, #dee2e6 100%);
+            color: #333;
+            width: 60px;
+            height: 240px;
+            z-index: 1;
+            padding-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-top: 3px solid #ddd;
+        }
+
+        .black-key {
+            background: linear-gradient(to bottom, #495057 0%, #343a40 30%, #212529 70%, #000000 100%);
+            color: #fff;
+            width: 36px;
+            height: 150px;
+            z-index: 2;
+            padding-bottom: 0.5rem;
+            border: 1px solid #000;
+            border-top: 3px solid #333;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .piano-key:hover {
+            transform: translateY(2px);
+        }
+
+        .piano-key:active,
+        .piano-key.pressed {
+            transform: translateY(4px);
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .white-key:active,
+        .white-key.pressed {
+            background: linear-gradient(to bottom, #e9ecef 0%, #dee2e6 30%, #ced4da 70%, #adb5bd 100%);
+        }
+
+        .black-key:active,
+        .black-key.pressed {
+            background: linear-gradient(to bottom, #6c757d 0%, #495057 30%, #343a40 70%, #212529 100%);
+        }
+
+        /* Component Cards */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .component-card {
+            background: var(--glass-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .component-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+        }
+
+        .component-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .component-description {
+            color: var(--muted-text);
+            line-height: 1.6;
+        }
+
+        /* Kit Cards */
+        .kit-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .kit-card {
+            background: var(--glass-bg);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .kit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .kit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        }
+
+        .kit-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .kit-features {
+            list-style: none;
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+
+        .kit-features li {
+            padding: 0.5rem 0;
+            color: var(--muted-text);
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .kit-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .buy-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .buy-button:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .piano-wrapper {
+                padding: 1rem;
+            }
+
+            .piano-keyboard {
+                min-width: 1200px;
+                height: 200px;
+            }
+
+            .white-key {
+                width: 50px;
+                height: 200px;
+            }
+
+            .black-key {
+                width: 30px;
+                height: 125px;
+            }
+
+            .recording-panel {
+                gap: 0.5rem;
+            }
+
+            .record-btn {
+                padding: 0.8rem 1.5rem;
+                min-width: 120px;
+                font-size: 0.9rem;
+            }
+
+            .kit-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .synth-interface {
+                padding: 1.5rem;
+            }
+
+            .piano-keyboard {
+                min-width: 1000px;
+                height: 180px;
+            }
+
+            .white-key {
+                width: 42px;
+                height: 180px;
+                font-size: 0.8rem;
+            }
+
+            .black-key {
+                width: 25px;
+                height: 110px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">🎹 DIY Synthesizer</div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span id="menuIcon">☰</span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li class="nav-item active" data-section="welcome">홈</li>
+                <li class="nav-item" data-section="theory">이론</li>
+                <li class="nav-item" data-section="components">부품</li>
+                <li class="nav-item" data-section="synthesizer">신디사이저</li>
+                <li class="nav-item" data-section="kits">키트</li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Section Navigation -->
+    <div class="section-navigation" id="sectionNavigation">
+        <button class="nav-arrow" id="prevSection">←</button>
+        <div class="section-indicator">
+            <span id="currentSectionName">홈</span>
+            <span>(<span id="currentSectionIndex">1</span>/5)</span>
+        </div>
+        <button class="nav-arrow" id="nextSection">→</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Welcome Section -->
+            <section id="welcome" class="section active">
+                <div class="hero">
+                    <h1 class="hero-title">DIY 아날로그 신디사이저</h1>
+                    <p class="hero-subtitle">전자음악의 세계로 떠나는 특별한 여행</p>
+                </div>
+
+                <div class="feature-cards">
+                    <div class="feature-card" data-nav="theory">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-title">학습</div>
+                        <p>신디사이저의 원리와 구조를 쉽게 이해하고 소리의 기본 개념부터 차근차근 배워보세요.</p>
+                    </div>
+                    <div class="feature-card" data-nav="synthesizer">
+                        <div class="feature-icon">🎹</div>
+                        <div class="feature-title">체험</div>
+                        <p>직접 소리를 만들고 연주해보는 실습을 통해 신디사이저의 매력을 경험해보세요.</p>
+                    </div>
+                    <div class="feature-card" data-nav="kits">
+                        <div class="feature-icon">🔧</div>
+                        <div class="feature-title">제작</div>
+                        <p>나만의 신디사이저를 직접 만들어보고 전자음악 제작의 즐거움을 느껴보세요.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theory Section -->
+            <section id="theory" class="section">
+                <h2 class="section-title">소리의 기본 원리</h2>
+                <p class="section-subtitle">신디사이저가 어떻게 소리를 만드는지 알아보겠습니다</p>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 1rem;">소리란 무엇인가?</h3>
+                    <p style="line-height: 1.8; color: var(--muted-text); margin-bottom: 1.5rem;">
+                        소리는 공기 중에서 일어나는 압력의 변화입니다. 물체가 진동하면 주변 공기 분자들이 압축되고 팽창하면서 파동이 만들어지고, 
+                        이 파동이 우리 귀에 도달하면 소리로 인식됩니다.
+                    </p>
+                    <p style="line-height: 1.8; color: var(--muted-text);">
+                        신디사이저는 전자적으로 이런 진동을 만들어서 소리를 생성합니다. 다양한 파형(사인파, 사각파, 톱니파 등)을 만들어 내어 
+                        각기 다른 음색의 소리를 만들어낼 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">기본 파형들</h3>
+                    <div class="waveform-demo">
+                        <div class="waveform-card" data-waveform="sine">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">사인파 (Sine)</h4>
+                            <canvas class="waveform-canvas" width="200" height="80"></canvas>
+                            <p style="color: var(--muted-text); margin: 1rem 0;">가장 순수한 형태의 파형으로, 부드럽고 둥근 소리</p>
+                            <button class="play-button" data-wave="sine" data-freq="440">재생</button>
+                        </div>
+                        <div class="waveform-card" data-waveform="square">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">사각파 (Square)</h4>
+                            <canvas class="waveform-canvas" width="200" height="80"></canvas>
+                            <p style="color: var(--muted-text); margin: 1rem 0;">날카롭고 디지털적인 소리, 클라리넷과 비슷</p>
+                            <button class="play-button" data-wave="square" data-freq="440">재생</button>
+                        </div>
+                        <div class="waveform-card" data-waveform="sawtooth">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">톱니파 (Sawtooth)</h4>
+                            <canvas class="waveform-canvas" width="200" height="80"></canvas>
+                            <p style="color: var(--muted-text); margin: 1rem 0;">밝고 날카로운 소리, 브라스 악기와 비슷</p>
+                            <button class="play-button" data-wave="sawtooth" data-freq="440">재생</button>
+                        </div>
+                        <div class="waveform-card" data-waveform="triangle">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">삼각파 (Triangle)</h4>
+                            <canvas class="waveform-canvas" width="200" height="80"></canvas>
+                            <p style="color: var(--muted-text); margin: 1rem 0;">사인파와 사각파의 중간 특성을 가진 소리</p>
+                            <button class="play-button" data-wave="triangle" data-freq="440">재생</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem;">신디사이저의 구조</h3>
+                    <div class="grid grid-3">
+                        <div style="background: var(--dark-card); padding: 2rem; border-radius: 1rem; text-align: center;">
+                            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔊</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">오실레이터 (VCO)</h4>
+                            <p style="color: var(--muted-text);">기본 소리를 만드는 부분입니다. 전자적으로 진동을 만들어 다양한 파형의 소리를 생성합니다.</p>
+                        </div>
+                        <div style="background: var(--dark-card); padding: 2rem; border-radius: 1rem; text-align: center;">
+                            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🎛️</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">필터 (VCF)</h4>
+                            <p style="color: var(--muted-text);">오실레이터에서 만든 소리를 조정합니다. 특정 주파수를 강조하거나 제거하여 음색을 변화시킵니다.</p>
+                        </div>
+                        <div style="background: var(--dark-card); padding: 2rem; border-radius: 1rem; text-align: center;">
+                            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📈</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">앰프 (VCA)</h4>
+                            <p style="color: var(--muted-text);">소리의 크기와 시간에 따른 변화를 조절합니다. 소리가 어떻게 시작되고 끝나는지를 결정합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem;">ADSR 엔벨로프</h3>
+                    <p style="color: var(--muted-text); margin-bottom: 2rem; line-height: 1.8;">
+                        ADSR은 소리가 시간에 따라 어떻게 변화하는지를 조절하는 중요한 요소입니다.
+                    </p>
+                    <div class="grid grid-4">
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; color: var(--success-color); margin-bottom: 0.5rem;">A</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">Attack</h4>
+                            <p style="color: var(--muted-text); font-size: 0.9rem;">건반을 누른 순간부터 소리가 최대 크기까지 올라가는 시간</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; color: var(--warning-color); margin-bottom: 0.5rem;">D</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">Decay</h4>
+                            <p style="color: var(--muted-text); font-size: 0.9rem;">최대 크기에서 지속 레벨까지 떨어지는 시간</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; color: var(--accent-color); margin-bottom: 0.5rem;">S</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">Sustain</h4>
+                            <p style="color: var(--muted-text); font-size: 0.9rem;">건반을 누르고 있는 동안 유지되는 소리의 크기</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 2rem; color: var(--error-color); margin-bottom: 0.5rem;">R</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 0.5rem;">Release</h4>
+                            <p style="color: var(--muted-text); font-size: 0.9rem;">건반을 뗀 후 소리가 완전히 사라질 때까지의 시간</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Components Section -->
+            <section id="components" class="section">
+                <h2 class="section-title">전자 부품 가이드</h2>
+                <p class="section-subtitle">신디사이저를 구성하는 주요 전자 부품들과 그 역할을 알아보겠습니다</p>
+
+                <div class="component-grid">
+                    <div class="component-card">
+                        <div class="component-icon">🔧</div>
+                        <div class="component-title">연산 증폭기 (Op-Amp)</div>
+                        <div class="component-description">
+                            신디사이저의 핵심 부품으로, 신호를 증폭하고 다양한 연산을 수행합니다. 
+                            오실레이터, 필터, 믹서 등 거의 모든 회로에 사용됩니다.
+                            <br><br>
+                            <strong>권장 모델:</strong> TL072, LM358, LM741
+                        </div>
+                    </div>
+
+                    <div class="component-card">
+                        <div class="component-icon">⚡</div>
+                        <div class="component-title">트랜지스터</div>
+                        <div class="component-description">
+                            신호를 증폭하거나 스위치 역할을 하는 반도체 소자입니다. 
+                            아날로그 회로에서 정밀한 신호 처리를 담당합니다.
+                            <br><br>
+                            <strong>주요 종류:</strong> BJT (BC549), JFET (J113)
+                        </div>
+                    </div>
+
+                    <div class="component-card">
+                        <div class="component-icon">〰️</div>
+                        <div class="component-title">저항 (Resistor)</div>
+                        <div class="component-description">
+                            전류의 흐름을 제한하고 전압을 분배하는 부품입니다. 
+                            회로의 동작점을 설정하고 신호 레벨을 조절합니다.
+                            <br><br>
+                            <strong>권장:</strong> 1/4W 탄소피막, 다양한 저항값
+                        </div>
+                    </div>
+
+                    <div class="component-card">
+                        <div class="component-icon">🔋</div>
+                        <div class="component-title">커패시터</div>
+                        <div class="component-description">
+                            전기를 저장하고 필터링하는 역할을 합니다. 
+                            AC 신호를 통과시키고 DC를 차단하는 커플링 기능도 수행합니다.
+                            <br><br>
+                            <strong>종류:</strong> 세라믹, 전해 커패시터
+                        </div>
+                    </div>
+
+                    <div class="component-card">
+                        <div class="component-icon">🎚️</div>
+                        <div class="component-title">가변저항 (Potentiometer)</div>
+                        <div class="component-description">
+                            볼륨, 주파수, 필터 컷오프 등을 조절하는 데 사용됩니다. 
+                            사용자가 직접 조작할 수 있는 컨트롤 요소입니다.
+                            <br><br>
+                            <strong>권장 값:</strong> 10kΩ, 100kΩ 로그/리니어
+                        </div>
+                    </div>
+
+                    <div class="component-card">
+                        <div class="component-icon">🌀</div>
+                        <div class="component-title">인덕터</div>
+                        <div class="component-description">
+                            자기장을 이용해 전류 변화를 방지합니다. 
+                            필터 회로나 발진 회로에서 중요한 역할을 합니다.
+                            <br><br>
+                            <strong>용도:</strong> LC 필터, 발진 회로
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">DIY 신디사이저 부품 리스트</h3>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: var(--dark-card); border-radius: 1rem; overflow: hidden;">
+                            <thead>
+                                <tr style="background: var(--primary-color); color: white;">
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600;">부품</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600;">권장 모델</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600;">용도</th>
+                                    <th style="padding: 1rem; text-align: left; font-weight: 600;">수량</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 1rem; color: var(--light-text);">Op-Amp</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">TL072, LM358</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">오실레이터, 필터, 앰프</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">5-10개</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 1rem; color: var(--light-text);">BJT</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">BC549, 2N3906</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">증폭, 스위칭</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">10-20개</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 1rem; color: var(--light-text);">JFET</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">J113, 2N5457</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">버퍼, 믹서</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">5-10개</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 1rem; color: var(--light-text);">저항</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">1/4W 탄소피막</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">전류 제한, 분압</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">각종 저항값</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 1rem; color: var(--light-text);">커패시터</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">세라믹, 전해</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">필터링, 커플링</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">각종 용량</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1rem; color: var(--light-text);">가변저항</td>
+                                    <td style="padding: 1rem; color: var(--accent-color);">10kΩ, 100kΩ</td>
+                                    <td style="padding: 1rem; color: var(--muted-text);">볼륨, 주파수 조절</td>
+                                    <td style="padding: 1rem; color: var(--light-text);">5-10개</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Synthesizer Section -->
+            <section id="synthesizer" class="section">
+                <h2 class="section-title">인터랙티브 신디사이저</h2>
+                <p class="section-subtitle">직접 소리를 만들고 연주해보세요</p>
+
+                <div class="synth-interface">
+                    <div class="control-panel">
+                        <div class="control-group">
+                            <h3>🎛️ 오실레이터</h3>
+                            <div class="control-item">
+                                <span class="control-label">파형</span>
+                                <select class="custom-select control-input" id="waveform">
+                                    <option value="sine">사인파 (Sine)</option>
+                                    <option value="square">사각파 (Square)</option>
+                                    <option value="sawtooth">톱니파 (Sawtooth)</option>
+                                    <option value="triangle">삼각파 (Triangle)</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">볼륨</span>
+                                <input type="range" class="range-slider control-input" id="volume" min="0" max="1" step="0.01" value="0.3">
+                                <span class="control-value" id="volumeDisplay">0.30</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">옥타브</span>
+                                <input type="range" class="range-slider control-input" id="octave" min="-2" max="2" step="1" value="0">
+                                <span class="control-value" id="octaveDisplay">0</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <h3>🎚️ 필터 (VCF)</h3>
+                            <div class="control-item">
+                                <span class="control-label">타입</span>
+                                <select class="custom-select control-input" id="filterType">
+                                    <option value="lowpass">Low Pass</option>
+                                    <option value="highpass">High Pass</option>
+                                    <option value="bandpass">Band Pass</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">컷오프</span>
+                                <input type="range" class="range-slider control-input" id="cutoff" min="100" max="8000" step="50" value="2000">
+                                <span class="control-value" id="cutoffDisplay">2000Hz</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">공명</span>
+                                <input type="range" class="range-slider control-input" id="resonance" min="0.1" max="20" step="0.1" value="1">
+                                <span class="control-value" id="resonanceDisplay">1.0</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <h3>📈 엔벨로프 (ADSR)</h3>
+                            <div class="control-item">
+                                <span class="control-label">Attack</span>
+                                <input type="range" class="range-slider control-input" id="attack" min="0" max="2" step="0.01" value="0.1">
+                                <span class="control-value" id="attackDisplay">0.10s</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">Decay</span>
+                                <input type="range" class="range-slider control-input" id="decay" min="0" max="2" step="0.01" value="0.3">
+                                <span class="control-value" id="decayDisplay">0.30s</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">Sustain</span>
+                                <input type="range" class="range-slider control-input" id="sustain" min="0" max="1" step="0.01" value="0.7">
+                                <span class="control-value" id="sustainDisplay">0.70</span>
+                            </div>
+                            <div class="control-item">
+                                <span class="control-label">Release</span>
+                                <input type="range" class="range-slider control-input" id="release" min="0" max="3" step="0.01" value="0.5">
+                                <span class="control-value" id="releaseDisplay">0.50s</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recording-panel">
+                        <button class="record-btn primary" id="recordBtn">
+                            <span>🔴</span> 녹음 시작
+                        </button>
+                        <button class="record-btn success" id="playBtn">
+                            <span>▶️</span> 재생
+                        </button>
+                        <button class="record-btn warning" id="stopBtn">
+                            <span>⏹️</span> 정지
+                        </button>
+                        <button class="record-btn secondary" id="clearBtn">
+                            <span>🗑️</span> 초기화
+                        </button>
+                    </div>
+
+                    <div class="status-display" id="statusDisplay">
+                        🎹 신디사이저가 준비되었습니다! 아래 키보드를 연주해보세요
+                    </div>
+
+                    <div class="piano-wrapper">
+                        <div class="piano-keyboard" id="pianoKeyboard">
+                            <!-- Piano keys will be generated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kits Section -->
+            <section id="kits" class="section">
+                <h2 class="section-title">DIY 키트</h2>
+                <p class="section-subtitle">실제로 만들어 볼 수 있는 신디사이저 키트를 소개합니다</p>
+
+                <div class="kit-preview">
+                    <div class="kit-card">
+                        <h3 class="kit-title">🎵 사각파 오실레이터 키트</h3>
+                        <p style="color: var(--muted-text); margin-bottom: 2rem;">
+                            기본적인 사각파 신호를 생성하는 오실레이터 키트입니다. 피치와 속도를 조절할 수 있어 다양한 사운드를 만들 수 있습니다.
+                        </p>
+                        <ul class="kit-features">
+                            <li>사각파 오실레이터 회로</li>
+                            <li>피치 컨트롤 (주파수 조절)</li>
+                            <li>속도 조절 기능</li>
+                            <li>LED 인디케이터 포함</li>
+                            <li>브래드보드 기반 (납땜 불필요)</li>
+                            <li>상세한 조립 매뉴얼 제공</li>
+                        </ul>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-size: 0.9rem; color: var(--muted-text);">조립시간: 30분-1시간</div>
+                                <div style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">₩45,000</div>
+                            </div>
+                            <button class="buy-button" data-kit="square-oscillator">구매하기</button>
+                        </div>
+                    </div>
+
+                    <div class="kit-card">
+                        <h3 class="kit-title">📏 펄스 폭 변조(PWM) 키트</h3>
+                        <p style="color: var(--muted-text); margin-bottom: 2rem;">
+                            펄스의 폭을 조절하여 독특한 사운드를 만드는 PWM 키트입니다. 간격과 피치를 세밀하게 조절할 수 있습니다.
+                        </p>
+                        <ul class="kit-features">
+                            <li>펄스 폭 변조(PWM) 회로</li>
+                            <li>펄스 간격 조절 기능</li>
+                            <li>피치 세밀 조정</li>
+                            <li>듀티 사이클 컨트롤</li>
+                            <li>실시간 파형 모니터링</li>
+                            <li>초보자 친화적 설계</li>
+                        </ul>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-size: 0.9rem; color: var(--muted-text);">조립시간: 30분-1시간</div>
+                                <div style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">₩45,000</div>
+                            </div>
+                            <button class="buy-button" data-kit="pwm-modulator">구매하기</button>
+                        </div>
+                    </div>
+
+                    <div class="kit-card">
+                        <h3 class="kit-title">🎹 원버튼 피아노 키트</h3>
+                        <p style="color: var(--muted-text); margin-bottom: 2rem;">
+                            간단한 버튼 하나로 피아노 소리를 내는 키트입니다. 피치 조절과 터치 감도 조정이 가능합니다.
+                        </p>
+                        <ul class="kit-features">
+                            <li>터치 센서 피아노 회로</li>
+                            <li>피치 조절 포텐셔미터</li>
+                            <li>터치 감도 조정 기능</li>
+                            <li>내장 스피커 포함</li>
+                            <li>컴팩트한 케이스 제공</li>
+                            <li>배터리 구동 (3-6시간 사용)</li>
+                        </ul>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                            <div>
+                                <div style="font-size: 0.9rem; color: var(--muted-text);">조립시간: 30분-1시간</div>
+                                <div style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">₩45,000</div>
+                            </div>
+                            <button class="buy-button" data-kit="one-button-piano">구매하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">🎛️ 추가 옵션: 4채널 믹서</h3>
+                    <div style="background: var(--dark-card); padding: 2rem; border-radius: 1rem; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎚️</div>
+                        <h4 style="color: var(--accent-color); font-size: 1.3rem; margin-bottom: 1rem;">4채널 오디오 믹서</h4>
+                        <p style="color: var(--muted-text); margin-bottom: 1.5rem; line-height: 1.6;">
+                            여러 개의 신디사이저 키트를 동시에 연결하여 믹싱할 수 있는 전문적인 4채널 믹서입니다. 
+                            각 채널별 볼륨 조절과 이퀄라이저 기능을 제공합니다.
+                        </p>
+                        <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 2rem;">
+                            <div>
+                                <div style="font-size: 0.9rem; color: var(--muted-text);">조립시간: 1-2시간</div>
+                                <div style="font-size: 1.3rem; color: var(--primary-color); font-weight: 700;">₩89,000</div>
+                            </div>
+                            <button class="buy-button" data-kit="4ch-mixer">구매하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">🛠️ 조립 가이드</h3>
+                    <div class="grid grid-3">
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">1. 부품 확인</h4>
+                            <p style="color: var(--muted-text);">키트에 포함된 모든 부품이 있는지 확인하고, 부품 리스트와 대조해보세요.</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">2. 전원 설정</h4>
+                            <p style="color: var(--muted-text);">브래드보드의 전원 레일을 설정하고 배터리 팩을 연결합니다.</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">🔌</div>
+                            <h4 style="color: var(--primary-color); margin-bottom: 1rem;">3. 회로 연결</h4>
+                            <p style="color: var(--muted-text);">회로도에 따라 부품들을 차례대로 연결하고 테스트합니다.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">❓ 자주 묻는 질문</h3>
+                    <div style="max-width: 800px; margin: 0 auto;">
+                        <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--dark-card); border-radius: 1rem;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">Q: 전자공학 지식이 없어도 만들 수 있나요?</h4>
+                            <p style="color: var(--muted-text);">A: 네! 초급자 키트는 납땜이 필요 없는 브래드보드를 사용하며, 상세한 가이드가 제공됩니다.</p>
+                        </div>
+                        <div style="margin-bottom: 2rem; padding: 1.5rem; background: var(--dark-card); border-radius: 1rem;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">Q: 조립 중 문제가 생기면 어떻게 하나요?</h4>
+                            <p style="color: var(--muted-text);">A: 온라인 커뮤니티와 이메일 지원을 통해 언제든지 도움을 받을 수 있습니다.</p>
+                        </div>
+                        <div style="padding: 1.5rem; background: var(--dark-card); border-radius: 1rem;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem;">Q: 완성된 신디사이저로 무엇을 할 수 있나요?</h4>
+                            <p style="color: var(--muted-text);">A: 기본적인 멜로디 연주부터 실험적인 사운드 디자인까지 다양한 음악 활동이 가능합니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // Synthesizer Application Class
+        class DIYSynthesizer {
+            constructor() {
+                this.audioContext = null;
+                this.oscillators = new Map();
+                this.gainNode = null;
+                this.filter = null;
+                this.isRecording = false;
+                this.recordedNotes = [];
+                this.currentOctave = 0;
+                
+                // Piano key configuration
+                this.notes = [
+                    { note: 'C', freq: 261.63, type: 'white', key: 'a', sharp: false },
+                    { note: 'C#', freq: 277.18, type: 'black', key: 'w', sharp: true },
+                    { note: 'D', freq: 293.66, type: 'white', key: 's', sharp: false },
+                    { note: 'D#', freq: 311.13, type: 'black', key: 'e', sharp: true },
+                    { note: 'E', freq: 329.63, type: 'white', key: 'd', sharp: false },
+                    { note: 'F', freq: 349.23, type: 'white', key: 'f', sharp: false },
+                    { note: 'F#', freq: 369.99, type: 'black', key: 't', sharp: true },
+                    { note: 'G', freq: 392.00, type: 'white', key: 'g', sharp: false },
+                    { note: 'G#', freq: 415.30, type: 'black', key: 'y', sharp: true },
+                    { note: 'A', freq: 440.00, type: 'white', key: 'h', sharp: false },
+                    { note: 'A#', freq: 466.16, type: 'black', key: 'u', sharp: true },
+                    { note: 'B', freq: 493.88, type: 'white', key: 'j', sharp: false }
+                ];
+
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Initialize audio context
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.setupAudioNodes();
+                    this.createPianoKeyboard();
+                    this.setupEventListeners();
+                    this.drawWaveforms();
+                    this.updateStatus('🎹 신디사이저가 준비되었습니다! 키보드를 연주해보세요');
+                } catch (error) {
+                    console.error('Audio initialization failed:', error);
+                    this.updateStatus('❌ 오디오 초기화에 실패했습니다. 브라우저를 새로고침해주세요.');
+                }
+            }
+
+            setupAudioNodes() {
+                // Main gain node
+                this.gainNode = this.audioContext.createGain();
+                this.gainNode.gain.value = 0.3;
+
+                // Filter node
+                this.filter = this.audioContext.createBiquadFilter();
+                this.filter.type = 'lowpass';
+                this.filter.frequency.value = 2000;
+                this.filter.Q.value = 1;
+
+                // Connect audio graph
+                this.filter.connect(this.gainNode);
+                this.gainNode.connect(this.audioContext.destination);
+            }
+
+            createPianoKeyboard() {
+                const keyboard = document.getElementById('pianoKeyboard');
+                keyboard.innerHTML = '';
+
+                const keyWidth = 60;
+                const blackKeyWidth = 36;
+                
+                // Extended note pattern to show more octaves
+                const notePattern = [
+                    { note: 'C', freq: 130.81, type: 'white', key: 'z' },
+                    { note: 'C#', freq: 138.59, type: 'black', key: 'q' },
+                    { note: 'D', freq: 146.83, type: 'white', key: 'x' },
+                    { note: 'D#', freq: 155.56, type: 'black', key: 'w' },
+                    { note: 'E', freq: 164.81, type: 'white', key: 'c' },
+                    { note: 'F', freq: 174.61, type: 'white', key: 'v' },
+                    { note: 'F#', freq: 185.00, type: 'black', key: 'e' },
+                    { note: 'G', freq: 196.00, type: 'white', key: 'b' },
+                    { note: 'G#', freq: 207.65, type: 'black', key: 'r' },
+                    { note: 'A', freq: 220.00, type: 'white', key: 'n' },
+                    { note: 'A#', freq: 233.08, type: 'black', key: 't' },
+                    { note: 'B', freq: 246.94, type: 'white', key: 'm' },
+                    
+                    // Middle octave (C4)
+                    { note: 'C', freq: 261.63, type: 'white', key: 'a' },
+                    { note: 'C#', freq: 277.18, type: 'black', key: '2' },
+                    { note: 'D', freq: 293.66, type: 'white', key: 's' },
+                    { note: 'D#', freq: 311.13, type: 'black', key: '3' },
+                    { note: 'E', freq: 329.63, type: 'white', key: 'd' },
+                    { note: 'F', freq: 349.23, type: 'white', key: 'f' },
+                    { note: 'F#', freq: 369.99, type: 'black', key: '5' },
+                    { note: 'G', freq: 392.00, type: 'white', key: 'g' },
+                    { note: 'G#', freq: 415.30, type: 'black', key: '6' },
+                    { note: 'A', freq: 440.00, type: 'white', key: 'h' },
+                    { note: 'A#', freq: 466.16, type: 'black', key: '7' },
+                    { note: 'B', freq: 493.88, type: 'white', key: 'j' },
+                    
+                    // Higher octave
+                    { note: 'C', freq: 523.25, type: 'white', key: 'k' },
+                    { note: 'C#', freq: 554.37, type: 'black', key: '9' },
+                    { note: 'D', freq: 587.33, type: 'white', key: 'l' }
+                ];
+
+                // Create white keys first
+                let whiteKeyIndex = 0;
+                const whiteKeys = [];
+                
+                notePattern.forEach((noteData, index) => {
+                    if (noteData.type === 'white') {
+                        const key = document.createElement('div');
+                        key.className = 'piano-key white-key';
+                        key.dataset.note = noteData.note;
+                        key.dataset.freq = noteData.freq;
+                        key.dataset.key = noteData.key;
+                        key.dataset.index = index;
+                        key.textContent = noteData.note;
+                        key.style.left = `${whiteKeyIndex * keyWidth}px`;
+                        
+                        whiteKeys.push({ element: key, index: whiteKeyIndex });
+                        this.addKeyEventListeners(key, noteData);
+                        keyboard.appendChild(key);
+                        whiteKeyIndex++;
+                    }
+                });
+
+                // Create black keys positioned correctly
+                notePattern.forEach((noteData, index) => {
+                    if (noteData.type === 'black') {
+                        const key = document.createElement('div');
+                        key.className = 'piano-key black-key';
+                        key.dataset.note = noteData.note;
+                        key.dataset.freq = noteData.freq;
+                        key.dataset.key = noteData.key;
+                        key.dataset.index = index;
+                        key.textContent = noteData.note;
+                        
+                        // Calculate position based on white key positions
+                        const whiteKeysBefore = notePattern.slice(0, index).filter(n => n.type === 'white').length;
+                        const leftPosition = (whiteKeysBefore * keyWidth) - (blackKeyWidth / 2);
+                        key.style.left = `${leftPosition}px`;
+                        
+                        this.addKeyEventListeners(key, noteData);
+                        keyboard.appendChild(key);
+                    }
+                });
+
+                // Update the notes array for other methods
+                this.notes = notePattern;
+            }
+
+            addKeyEventListeners(keyElement, noteData) {
+                // Touch events for mobile
+                keyElement.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.playNote(noteData.freq, keyElement);
+                });
+
+                keyElement.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.stopNote(noteData.freq, keyElement);
+                });
+
+                // Mouse events for desktop
+                keyElement.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    this.playNote(noteData.freq, keyElement);
+                });
+
+                keyElement.addEventListener('mouseup', (e) => {
+                    e.preventDefault();
+                    this.stopNote(noteData.freq, keyElement);
+                });
+
+                keyElement.addEventListener('mouseleave', () => {
+                    this.stopNote(noteData.freq, keyElement);
+                });
+            }
+
+            setupEventListeners() {
+                // Control panel event listeners
+                document.getElementById('waveform').addEventListener('change', (e) => {
+                    this.updateStatus(`파형이 ${e.target.options[e.target.selectedIndex].text}로 변경되었습니다`);
+                });
+
+                // Volume control
+                document.getElementById('volume').addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.gainNode.gain.value = value;
+                    document.getElementById('volumeDisplay').textContent = value.toFixed(2);
+                });
+
+                // Octave control
+                document.getElementById('octave').addEventListener('input', (e) => {
+                    this.currentOctave = parseInt(e.target.value);
+                    document.getElementById('octaveDisplay').textContent = e.target.value;
+                });
+
+                // Filter controls
+                document.getElementById('filterType').addEventListener('change', (e) => {
+                    this.filter.type = e.target.value;
+                });
+
+                document.getElementById('cutoff').addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.filter.frequency.value = value;
+                    document.getElementById('cutoffDisplay').textContent = value + 'Hz';
+                });
+
+                document.getElementById('resonance').addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.filter.Q.value = value;
+                    document.getElementById('resonanceDisplay').textContent = value.toFixed(1);
+                });
+
+                // ADSR controls
+                ['attack', 'decay', 'sustain', 'release'].forEach(param => {
+                    document.getElementById(param).addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        const displayId = param + 'Display';
+                        const displayValue = param === 'sustain' ? value.toFixed(2) : value.toFixed(2) + 's';
+                        document.getElementById(displayId).textContent = displayValue;
+                    });
+                });
+
+                // Recording controls
+                document.getElementById('recordBtn').addEventListener('click', () => {
+                    this.toggleRecording();
+                });
+
+                document.getElementById('playBtn').addEventListener('click', () => {
+                    this.playRecording();
+                });
+
+                document.getElementById('stopBtn').addEventListener('click', () => {
+                    this.stopPlayback();
+                });
+
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    this.clearRecording();
+                });
+
+                // Keyboard input
+                document.addEventListener('keydown', (e) => {
+                    if (e.repeat) return;
+                    const noteData = this.notes.find(n => n.key === e.key.toLowerCase());
+                    if (noteData) {
+                        const keyElement = document.querySelector(`[data-key="${noteData.key}"]`);
+                        this.playNote(noteData.freq, keyElement);
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    const noteData = this.notes.find(n => n.key === e.key.toLowerCase());
+                    if (noteData) {
+                        const keyElement = document.querySelector(`[data-key="${noteData.key}"]`);
+                        this.stopNote(noteData.freq, keyElement);
+                    }
+                });
+
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        // This will be handled by the new navigation system
+                    });
+                });
+
+                // Feature cards navigation - handled by new navigation system
+
+                // Waveform demo buttons
+                document.querySelectorAll('.play-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        this.playDemoWaveform(button.dataset.wave, parseFloat(button.dataset.freq));
+                    });
+                });
+
+                // Audio context resume for mobile
+                document.addEventListener('touchstart', () => {
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                }, { once: true });
+
+                document.addEventListener('click', () => {
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                }, { once: true });
+            }
+
+            async playNote(frequency, keyElement) {
+                if (!this.audioContext || this.oscillators.has(frequency)) return;
+
+                try {
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+
+                    // Apply octave shift
+                    const adjustedFreq = frequency * Math.pow(2, this.currentOctave);
+                    
+                    // Create oscillator
+                    const oscillator = this.audioContext.createOscillator();
+                    const waveform = document.getElementById('waveform').value;
+                    oscillator.type = waveform;
+                    oscillator.frequency.value = adjustedFreq;
+
+                    // Create envelope
+                    const envelope = this.audioContext.createGain();
+                    envelope.gain.value = 0;
+
+                    // Get ADSR values
+                    const attack = parseFloat(document.getElementById('attack').value);
+                    const decay = parseFloat(document.getElementById('decay').value);
+                    const sustain = parseFloat(document.getElementById('sustain').value);
+                    const currentTime = this.audioContext.currentTime;
+
+                    // Apply ADSR envelope
+                    envelope.gain.setValueAtTime(0, currentTime);
+                    envelope.gain.linearRampToValueAtTime(1, currentTime + attack);
+                    envelope.gain.linearRampToValueAtTime(sustain, currentTime + attack + decay);
+
+                    // Connect audio graph
+                    oscillator.connect(envelope);
+                    envelope.connect(this.filter);
+                    oscillator.start();
+
+                    // Store oscillator and envelope
+                    this.oscillators.set(frequency, { oscillator, envelope });
+                    keyElement.classList.add('pressed');
+
+                    // Haptic feedback on mobile
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(30);
+                    }
+
+                    // Record if recording
+                    if (this.isRecording) {
+                        this.recordedNotes.push({
+                            type: 'noteOn',
+                            frequency: frequency,
+                            time: Date.now(),
+                            waveform: waveform,
+                            octave: this.currentOctave
+                        });
+                    }
+
+                } catch (error) {
+                    console.error('Error playing note:', error);
+                    this.updateStatus('❌ 음성 재생 중 오류가 발생했습니다');
+                }
+            }
+
+            stopNote(frequency, keyElement) {
+                const noteData = this.oscillators.get(frequency);
+                if (!noteData) return;
+
+                try {
+                    const { oscillator, envelope } = noteData;
+                    const release = parseFloat(document.getElementById('release').value);
+                    const currentTime = this.audioContext.currentTime;
+
+                    // Apply release envelope
+                    envelope.gain.cancelScheduledValues(currentTime);
+                    envelope.gain.setValueAtTime(envelope.gain.value, currentTime);
+                    envelope.gain.linearRampToValueAtTime(0, currentTime + release);
+
+                    // Stop oscillator after release
+                    setTimeout(() => {
+                        try {
+                            oscillator.stop();
+                            oscillator.disconnect();
+                            envelope.disconnect();
+                        } catch (e) {
+                            // Oscillator might already be stopped
+                        }
+                    }, release * 1000);
+
+                    this.oscillators.delete(frequency);
+                    keyElement.classList.remove('pressed');
+
+                    // Record if recording
+                    if (this.isRecording) {
+                        this.recordedNotes.push({
+                            type: 'noteOff',
+                            frequency: frequency,
+                            time: Date.now()
+                        });
+                    }
+
+                } catch (error) {
+                    console.error('Error stopping note:', error);
+                }
+            }
+
+            async playDemoWaveform(waveform, frequency) {
+                if (!this.audioContext) return;
+
+                try {
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+
+                    const oscillator = this.audioContext.createOscillator();
+                    const gain = this.audioContext.createGain();
+
+                    oscillator.type = waveform;
+                    oscillator.frequency.value = frequency;
+                    gain.gain.value = 0.3;
+
+                    oscillator.connect(gain);
+                    gain.connect(this.audioContext.destination);
+
+                    // Play for 1 second
+                    oscillator.start();
+                    oscillator.stop(this.audioContext.currentTime + 1);
+
+                    this.updateStatus(`${waveform} 파형을 재생 중입니다 (${frequency}Hz)`);
+
+                } catch (error) {
+                    console.error('Error playing demo waveform:', error);
+                }
+            }
+
+            toggleRecording() {
+                const recordBtn = document.getElementById('recordBtn');
+                
+                if (!this.isRecording) {
+                    this.startRecording();
+                    recordBtn.innerHTML = '<span>⏺️</span> 녹음 중지';
+                    recordBtn.classList.add('recording');
+                    this.updateStatus('🔴 녹음이 시작되었습니다. 연주해보세요!');
+                } else {
+                    this.stopRecording();
+                    recordBtn.innerHTML = '<span>🔴</span> 녹음 시작';
+                    recordBtn.classList.remove('recording');
+                    this.updateStatus(`✅ 녹음이 완료되었습니다 (${this.recordedNotes.length}개 이벤트)`);
+                }
+            }
+
+            startRecording() {
+                this.isRecording = true;
+                this.recordedNotes = [];
+                this.recordStartTime = Date.now();
+            }
+
+            stopRecording() {
+                this.isRecording = false;
+            }
+
+            playRecording() {
+                if (this.recordedNotes.length === 0) {
+                    this.updateStatus('❌ 재생할 녹음 데이터가 없습니다. 먼저 녹음해주세요.');
+                    return;
+                }
+
+                this.updateStatus('🎵 녹음된 연주를 재생합니다...');
+                const startTime = this.recordedNotes[0].time;
+
+                this.recordedNotes.forEach((event, index) => {
+                    const delay = event.time - startTime;
+                    
+                    setTimeout(() => {
+                        const keyElement = document.querySelector(`[data-freq="${event.frequency}"]`);
+                        
+                        if (event.type === 'noteOn') {
+                            // Restore settings
+                            if (event.waveform) {
+                                document.getElementById('waveform').value = event.waveform;
+                            }
+                            if (event.octave !== undefined) {
+                                this.currentOctave = event.octave;
+                                document.getElementById('octave').value = event.octave;
+                                document.getElementById('octaveDisplay').textContent = event.octave;
+                            }
+                            this.playNote(event.frequency, keyElement);
+                        } else if (event.type === 'noteOff') {
+                            this.stopNote(event.frequency, keyElement);
+                        }
+
+                        // Check if it's the last event
+                        if (index === this.recordedNotes.length - 1) {
+                            setTimeout(() => {
+                                this.updateStatus('✅ 재생이 완료되었습니다');
+                            }, 1000);
+                        }
+                    }, delay);
+                });
+            }
+
+            stopPlayback() {
+                // Stop all currently playing notes
+                this.oscillators.forEach((noteData, frequency) => {
+                    const keyElement = document.querySelector(`[data-freq="${frequency}"]`);
+                    this.stopNote(frequency, keyElement);
+                });
+                
+                this.updateStatus('⏹️ 재생이 정지되었습니다');
+            }
+
+            clearRecording() {
+                this.recordedNotes = [];
+                this.updateStatus('🗑️ 녹음 데이터가 초기화되었습니다');
+            }
+
+            navigateToSection(sectionId) {
+                // This method is now handled by the new navigation system
+                // Keeping for backward compatibility
+                const sections = ['welcome', 'theory', 'components', 'synthesizer', 'kits'];
+                const sectionIndex = sections.indexOf(sectionId);
+                if (sectionIndex !== -1) {
+                    // Trigger the new navigation system
+                    const event = new CustomEvent('navigateToSection', { detail: sectionIndex });
+                    document.dispatchEvent(event);
+                }
+            }
+
+            drawWaveforms() {
+                const canvases = document.querySelectorAll('.waveform-canvas');
+                
+                canvases.forEach(canvas => {
+                    const ctx = canvas.getContext('2d');
+                    const waveform = canvas.parentElement.dataset.waveform;
+                    
+                    this.drawWaveform(ctx, waveform, canvas.width, canvas.height);
+                });
+            }
+
+            drawWaveform(ctx, waveform, width, height) {
+                ctx.clearRect(0, 0, width, height);
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                const centerY = height / 2;
+                const amplitude = height * 0.3;
+                const frequency = 4; // Number of cycles to show
+
+                for (let x = 0; x < width; x++) {
+                    const t = (x / width) * frequency * 2 * Math.PI;
+                    let y;
+
+                    switch (waveform) {
+                        case 'sine':
+                            y = centerY - Math.sin(t) * amplitude;
+                            break;
+                        case 'square':
+                            y = centerY - (Math.sin(t) > 0 ? 1 : -1) * amplitude;
+                            break;
+                        case 'sawtooth':
+                            y = centerY - (2 * (t % (2 * Math.PI)) / (2 * Math.PI) - 1) * amplitude;
+                            break;
+                        case 'triangle':
+                            const phase = t % (2 * Math.PI);
+                            if (phase < Math.PI) {
+                                y = centerY - (2 * phase / Math.PI - 1) * amplitude;
+                            } else {
+                                y = centerY - (3 - 2 * phase / Math.PI) * amplitude;
+                            }
+                            break;
+                        default:
+                            y = centerY;
+                    }
+
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                ctx.stroke();
+            }
+
+            updateStatus(message) {
+                document.getElementById('statusDisplay').textContent = message;
+            }
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new DIYSynthesizer();
+            
+            // Mobile menu functionality
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.getElementById('navMenu');
+            const menuIcon = document.getElementById('menuIcon');
+            
+            mobileMenuToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                menuIcon.textContent = navMenu.classList.contains('active') ? '✕' : '☰';
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenuToggle.contains(e.target) && !navMenu.contains(e.target)) {
+                    navMenu.classList.remove('active');
+                    menuIcon.textContent = '☰';
+                }
+            });
+
+            // Section navigation functionality
+            const sections = ['welcome', 'theory', 'components', 'synthesizer', 'kits'];
+            const sectionNames = ['홈', '이론', '부품', '신디사이저', '키트'];
+            let currentSectionIndex = 0;
+
+            const prevButton = document.getElementById('prevSection');
+            const nextButton = document.getElementById('nextSection');
+            const currentSectionName = document.getElementById('currentSectionName');
+            const currentSectionIndexEl = document.getElementById('currentSectionIndex');
+
+            function updateSectionNavigation() {
+                currentSectionName.textContent = sectionNames[currentSectionIndex];
+                currentSectionIndexEl.textContent = currentSectionIndex + 1;
+                
+                prevButton.disabled = currentSectionIndex === 0;
+                nextButton.disabled = currentSectionIndex === sections.length - 1;
+            }
+
+            function navigateToSectionByIndex(index) {
+                if (index >= 0 && index < sections.length) {
+                    currentSectionIndex = index;
+                    
+                    // Update navigation
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelector(`[data-section="${sections[index]}"]`).classList.add('active');
+
+                    // Show section
+                    document.querySelectorAll('.section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.getElementById(sections[index]).classList.add('active');
+
+                    // Close mobile menu
+                    navMenu.classList.remove('active');
+                    menuIcon.textContent = '☰';
+
+                    // Update section navigation
+                    updateSectionNavigation();
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            prevButton.addEventListener('click', () => {
+                if (currentSectionIndex > 0) {
+                    navigateToSectionByIndex(currentSectionIndex - 1);
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                if (currentSectionIndex < sections.length - 1) {
+                    navigateToSectionByIndex(currentSectionIndex + 1);
+                }
+            });
+
+            // Override the original navigation method
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.addEventListener('click', () => {
+                    const sectionId = item.dataset.section;
+                    const sectionIndex = sections.indexOf(sectionId);
+                    if (sectionIndex !== -1) {
+                        navigateToSectionByIndex(sectionIndex);
+                    }
+                });
+            });
+
+            // Feature cards navigation
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const targetSection = card.dataset.nav;
+                    if (targetSection) {
+                        const sectionIndex = sections.indexOf(targetSection);
+                        if (sectionIndex !== -1) {
+                            navigateToSectionByIndex(sectionIndex);
+                        }
+                    }
+                });
+            });
+
+            // Initialize section navigation
+            updateSectionNavigation();
+
+            // Listen for custom navigation events
+            document.addEventListener('navigateToSection', (e) => {
+                navigateToSectionByIndex(e.detail);
+            });
+
+            // Kit purchase functionality
+            document.querySelectorAll('.buy-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const kitType = button.dataset.kit;
+                    handleKitPurchase(kitType);
+                });
+            });
+
+            function handleKitPurchase(kitType) {
+                // Kit URLs - 실제 구매 링크로 변경하세요
+                const kitUrls = {
+                    'square-oscillator': 'https://example.com/kit/square-oscillator',
+                    'pwm-modulator': 'https://example.com/kit/pwm-modulator', 
+                    'one-button-piano': 'https://example.com/kit/one-button-piano',
+                    '4ch-mixer': 'https://example.com/kit/4ch-mixer'
+                };
+
+                const url = kitUrls[kitType];
+                if (url) {
+                    // 새 창에서 구매 페이지 열기
+                    window.open(url, '_blank');
+                } else {
+                    alert('구매 페이지 준비 중입니다. 잠시만 기다려주세요!');
+                }
+            }
+        });
+
+        // Handle viewport height for mobile
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+
+        window.addEventListener('load', setViewportHeight);
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(setViewportHeight, 500);
+        });
+
+        // Prevent zoom on iOS
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
