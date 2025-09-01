@@ -1,9 +1,9 @@
-            navig<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>DIY 아날로그 신디사이저 | 전자음악의 세계로</title>
+    <title>DIY ì•„ë‚ ë¡œê·¸ ì‹ ë""ì‚¬ì´ì € | ì „ìžìŒì•…ì˜ ì„¸ê³„ë¡œ</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -782,7 +782,7 @@
         }
 
         .kit-features li::before {
-            content: '✓';
+            content: 'âœ"';
             position: absolute;
             left: 0;
             color: var(--success-color);
@@ -809,6 +809,35 @@
 
         .buy-button:active {
             transform: translateY(0);
+        }
+
+        /* Cube Slides Responsive */
+        .cube-slides-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .cube-slide-container {
+            position: relative;
+            width: 100%;
+            height: 350px;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background: var(--dark-card);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .cube-slides-grid {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
+            }
+            .cube-slide-container {
+                height: 280px !important;
+            }
         }
 
         /* Responsive Design */
@@ -1019,7 +1048,7 @@
                     <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem;">신디사이저의 구조</h3>
                     <div class="grid grid-3">
                         <div style="background: var(--dark-card); padding: 2rem; border-radius: 1rem; text-align: center;">
-                            <div style="font-size: 2.5rem; margin-bottom: 1rem;">🔊</div>
+                            <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
                             <h4 style="color: var(--primary-color); margin-bottom: 1rem;">오실레이터 (VCO)</h4>
                             <p style="color: var(--muted-text);">기본 소리를 만드는 부분입니다. 전자적으로 진동을 만들어 다양한 파형의 소리를 생성합니다.</p>
                         </div>
@@ -1327,7 +1356,7 @@
                     </div>
 
                     <div class="kit-card">
-                        <h3 class="kit-title">📏 펄스 폭 변조(PWM) 키트</h3>
+                        <h3 class="kit-title">📊 펄스 폭 변조(PWM) 키트</h3>
                         <p style="color: var(--muted-text); margin-bottom: 2rem;">
                             펄스의 폭을 조절하여 독특한 사운드를 만드는 PWM 키트입니다. 간격과 피치를 세밀하게 조절할 수 있습니다.
                         </p>
@@ -1367,6 +1396,42 @@
                                 <div style="font-size: 1.5rem; color: var(--primary-color); font-weight: 700;">₩45,000</div>
                             </div>
                             <button class="buy-button" data-kit="one-button-piano">구매하기</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <h3 style="color: var(--primary-color); font-size: 1.5rem; margin-bottom: 2rem; text-align: center;">🎵 사운드토이 큐브 시리즈</h3>
+                    <p style="color: var(--muted-text); margin-bottom: 3rem; text-align: center; line-height: 1.6;">
+                        사운드토이 큐브는 쉽고 재미있게 전자음악을 만들 수 있는 교육용 키트입니다. 
+                        아래 슬라이드에서 제작 과정과 기능을 확인해보세요!
+                    </p>
+                    
+                    <div class="cube-slides-grid">
+                        <!-- 큐브01 슬라이드 -->
+                        <div style="text-align: center;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem; font-size: 1.2rem;">🎛️ 사운드토이 큐브01</h4>
+                            <div class="cube-slide-container">
+                                <iframe 
+                                    src="https://www.canva.com/design/DAGqPNWGerM/JV_-VaOp1ggOGjEbCCatSA/view?embed" 
+                                    style="width: 100%; height: 100%; border: none;"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            <p style="color: var(--muted-text); margin-top: 1rem; font-size: 0.9rem;">기본 오실레이터와 필터 기능</p>
+                        </div>
+                        
+                        <!-- 큐브02 슬라이드 -->
+                        <div style="text-align: center;">
+                            <h4 style="color: var(--accent-color); margin-bottom: 1rem; font-size: 1.2rem;">🎹 사운드토이 큐브02</h4>
+                            <div class="cube-slide-container">
+                                <iframe 
+                                    src="https://www.canva.com/design/DAGq2EFp4Bc/k5TPzkbMl7ZkRp8lxEVGRw/view?embed" 
+                                    style="width: 100%; height: 100%; border: none;"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            <p style="color: var(--muted-text); margin-top: 1rem; font-size: 0.9rem;">시퀀서와 드럼머신 기능</p>
                         </div>
                     </div>
                 </div>
@@ -1474,7 +1539,7 @@
                     this.updateStatus('🎹 신디사이저가 준비되었습니다! 키보드를 연주해보세요');
                 } catch (error) {
                     console.error('Audio initialization failed:', error);
-                    this.updateStatus('❌ 오디오 초기화에 실패했습니다. 브라우저를 새로고침해주세요.');
+                    this.updateStatus('⌛ 오디오 초기화에 실패했습니다. 브라우저를 새로고침해주세요.');
                 }
             }
 
@@ -1801,7 +1866,7 @@
 
                 } catch (error) {
                     console.error('Error playing note:', error);
-                    this.updateStatus('❌ 음성 재생 중 오류가 발생했습니다');
+                    this.updateStatus('⌛ 음성 재생 중 오류가 발생했습니다');
                 }
             }
 
@@ -1904,7 +1969,7 @@
 
             playRecording() {
                 if (this.recordedNotes.length === 0) {
-                    this.updateStatus('❌ 재생할 녹음 데이터가 없습니다. 먼저 녹음해주세요.');
+                    this.updateStatus('⌛ 재생할 녹음 데이터가 없습니다. 먼저 녹음해주세요.');
                     return;
                 }
 
